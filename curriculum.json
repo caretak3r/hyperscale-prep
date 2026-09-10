@@ -1,6 +1,6 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC",
-  "living_doc": "/home/box/job-prep/hyperscale-one-pager.md",
+  "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
   "next_lesson": 3,
   "completed": [
     {
@@ -30,5 +30,6 @@
     "IaC: Terraform + Atlantis at fleet scale",
     "Workflow orchestration: Temporal & Argo Workflows",
     "Systems design tradeoffs for rapidly evolving platforms"
-  ]
+  ],
+  "site_url": "https://caretak3r.github.io/hyperscale-prep/"
 }

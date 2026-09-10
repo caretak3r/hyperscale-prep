@@ -1,0 +1,54 @@
+---
+title: Home
+---
+
+# Hyperscale Prep
+
+Public study site for operating **large-scale compute at hyperscale** — the kind of role that asks for **100+ clusters / 10K+ nodes**, deep Kubernetes internals, cloud & cluster networking, security, and safe change systems (Terraform/Atlantis, Temporal/Argo).
+
+Maintained as **daily operator-deep lessons** plus diagrams: written like an engineer who ran this in production — not a certification cram sheet.
+
+**Live docs:** [caretak3r.github.io/hyperscale-prep](https://caretak3r.github.io/hyperscale-prep/)
+
+---
+
+## What this JD is really asking
+
+Interviewers saying “100+ clusters / 10K+ nodes” are not asking if you can `kubectl get nodes` on a big managed cluster. They want evidence you have **run a fleet under partial failure**: many independent control planes, continuous node death, and automation that treats clusters as cattle.
+
+This site builds that mental model lesson by lesson.
+
+## How daily lessons work
+
+1. **One lesson per day** on a JD-aligned topic.
+2. Each lesson targets production depth:
+   - Diagram (PNG + Mermaid)
+   - Concrete commands / config
+   - **Failures & fixes** (symptoms → causes → mitigations)
+   - Real reference URLs
+   - Interview soundbites
+   - Self-check prompt
+3. Future lessons live as MDX under [`lessons/`](/lessons/01-hyperscale-mental-model) — see [Conventions](/conventions).
+4. The original [`hyperscale-one-pager.md`](https://github.com/caretak3r/hyperscale-prep/blob/main/hyperscale-one-pager.md) is kept as an [archive](/archive/one-pager); the docs site is the canonical reading path.
+
+## Curriculum
+
+| # | Lesson | Status |
+|---|---|---|
+| 1 | [Hyperscale mental model: 100+ clusters / 10K+ nodes](/lessons/01-hyperscale-mental-model) | Done |
+| 2 | [Kubernetes control plane internals at scale](/lessons/02-k8s-control-plane) | Done |
+| 3 | Cluster provisioning & lifecycle systems | Next |
+| — | Borg/Mesos-like orchestration, cloud networking, Cilium/eBPF, mesh, security, Terraform/Atlantis, Temporal/Argo, design tradeoffs | Upcoming |
+
+Progress metadata: [`curriculum.json`](https://github.com/caretak3r/hyperscale-prep/blob/main/curriculum.json).
+
+## How to read
+
+1. **Interview crunch:** newest lessons first; use soundbites + Failures & fixes as flashcards.
+2. **Deep prep:** Lesson 1 → 2 → … in order — later lessons assume cell/fleet vocabulary.
+3. Open linked PNGs / Mermaid while reading; each lesson says how to read the diagram top-down.
+4. Do the **Quick self-check** out loud before the next lesson.
+
+## Start here
+
+→ [Lesson 1 — Hyperscale mental model](/lessons/01-hyperscale-mental-model)

@@ -1,0 +1,65 @@
+# Conventions
+
+How future lessons are written and shipped in this repo.
+
+## File layout
+
+| Path | Purpose |
+|---|---|
+| `pages/lessons/*.mdx` | Canonical lesson pages (Nextra / MDX) |
+| `pages/index.mdx` | Home — JD intro + how lessons work |
+| `pages/conventions.mdx` | This page |
+| `public/*.png` | Stable diagram filenames (don’t rename lightly) |
+| `hyperscale-one-pager.md` | Archive / flat dump of early lessons |
+| `curriculum.json` | Progress metadata (`next_lesson`, dates) |
+
+## Writing a new lesson
+
+1. Add `pages/lessons/NN-slug.mdx` (zero-padded number).
+2. Register it in `pages/lessons/_meta.json` for sidebar order.
+3. Update `curriculum.json` (`completed` / `next_lesson` / `upcoming`).
+4. Link it from the home curriculum table.
+5. Prefer a PNG in `public/` **and** a Mermaid overview in the MDX.
+
+## Diagram rules
+
+- **No ASCII architecture diagrams** in new lessons — use Mermaid (```` ```mermaid ```` fences) and/or PNGs.
+- Prefer **images + Mermaid together**: PNG for the rich illustration; Mermaid for the quick structural read and diffability.
+- Keep PNG filenames stable so links don’t rot (`hyperscale-fleet-topology.png`, `k8s-control-plane-at-scale.png`, …).
+- With `basePath: '/hyperscale-prep'`, reference images as `/hyperscale-fleet-topology.png` (Next/Nextra prefixes `basePath` for `public/` assets in MDX `<img>` / markdown images depending on setup — prefer markdown `![alt](/hyperscale-fleet-topology.png)`).
+
+## Lesson shape (required sections)
+
+Every lesson should include, in roughly this order:
+
+1. **What interviewers are really probing** (operator view, not textbook)
+2. **Core diagram** (PNG + Mermaid + “read it top-down”)
+3. **Idiosyncrasies you only learn in production**
+4. **Concrete commands & config**
+5. **Failures & fixes** table — symptom → likely root cause → fix / mitigation
+6. **Interview soundbites**
+7. **How this maps to the JD**
+8. **References** (real URLs)
+9. **Quick self-check**
+
+## Voice
+
+- First-person operator experience is fine (“I have chased…”).
+- Prefer production failure stories over certification checklists.
+- Commands are illustrative — adapt to your cloud and security posture.
+- When refreshing a lesson, keep the original date and note `refreshed YYYY-MM-DD`.
+
+## Local preview
+
+```bash
+npm install
+npm run dev
+# open http://localhost:3000/hyperscale-prep/
+```
+
+Static export (what GitHub Pages serves):
+
+```bash
+npm run build
+# output in out/
+```

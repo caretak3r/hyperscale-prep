@@ -6,6 +6,8 @@ This doc accumulates daily lessons. Read newest-first for interviews; skim older
 
 ---
 
+> **Superseded for reading:** canonical lessons are on the docs site — [Lesson 1](https://caretak3r.github.io/hyperscale-prep/lessons/01-hyperscale-mental-model/), [Lesson 2](https://caretak3r.github.io/hyperscale-prep/lessons/02-k8s-control-plane/). This file is kept as a flat archive.
+
 ## Lesson 1 — Hyperscale mental model: 100+ clusters / 10K+ nodes
 *2026-09-08 · refreshed 2026-09-10*
 

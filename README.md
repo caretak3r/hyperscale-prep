@@ -1,10 +1,10 @@
 # Hyperscale Prep
 
-Public study repo for operating **large-scale compute at hyperscale** — the kind of role that asks for **100+ clusters / 10K+ nodes**, deep Kubernetes internals, cloud & cluster networking, security, and safe change systems (Terraform/Atlantis, Temporal/Argo).
+Public study site for operating **large-scale compute at hyperscale** — **100+ clusters / 10K+ nodes**, Kubernetes internals, cloud & cluster networking, security, and safe change systems (Terraform/Atlantis, Temporal/Argo).
 
-Maintained as a **living one-pager** plus diagrams: one dense lesson per day, written like an engineer who ran this in production — not a certification cram sheet.
+**Live docs:** https://caretak3r.github.io/hyperscale-prep/
 
-**Living doc:** [`hyperscale-one-pager.md`](./hyperscale-one-pager.md)
+Built with [Nextra](https://nextra.site) (`nextra-theme-docs`) and static-exported to GitHub Pages.
 
 ---
 
@@ -12,58 +12,42 @@ Maintained as a **living one-pager** plus diagrams: one dense lesson per day, wr
 
 - Build an interview-ready **mental model** for fleets (cells, blast radius, lifecycle automation).
 - Go **operator-deep** on each JD topic: idiosyncrasies, real CLI/config, failure modes (symptom → root cause → fix).
-- Keep a single artifact you can skim the night before an interview instead of scattered notes.
+- Keep a browsable docs site (plus an archived flat one-pager) you can skim the night before an interview.
 
 This is prep material, not a product. Commands and configs are illustrative of production patterns; adapt them to your cloud and security posture.
 
 ---
 
-## JD coverage
+## Local development
 
-| Theme | Status in one-pager |
+```bash
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000/hyperscale-prep/](http://localhost:3000/hyperscale-prep/) (note the `basePath`).
+
+Static export (same as Pages):
+
+```bash
+npm run build
+# static files in out/
+```
+
+Requires Node 18+.
+
+---
+
+## Curriculum
+
+| Theme | Status |
 |---|---|
-| Hyperscale fleet mental model (100+ clusters / 10K+ nodes) | Lesson 1 |
-| Kubernetes control plane internals at scale | Lesson 2 |
+| Hyperscale fleet mental model (100+ clusters / 10K+ nodes) | [Lesson 1](https://caretak3r.github.io/hyperscale-prep/lessons/01-hyperscale-mental-model/) |
+| Kubernetes control plane internals at scale | [Lesson 2](https://caretak3r.github.io/hyperscale-prep/lessons/02-k8s-control-plane/) |
 | Cluster provisioning & lifecycle systems | Next (Lesson 3) |
-| Borg/Mesos-like orchestration patterns | Upcoming |
-| Cloud networking (VPC, peering, Shared VPC, TGW) | Upcoming |
-| Interconnect / Direct Connect, Cloud NAT, BGP | Upcoming |
-| Edge LB & DDoS | Upcoming |
-| Cluster networking: CNI, Cilium, eBPF | Upcoming |
-| NetworkPolicy, multi-NIC, sFlow | Upcoming |
-| Service mesh (Istio/Envoy/Linkerd) & mTLS | Upcoming |
-| Cluster security: PSS, admission, RBAC, IAM | Upcoming |
-| Node/container hardening & supply chain | Upcoming |
-| IaC: Terraform + Atlantis at fleet scale | Upcoming |
-| Workflow orchestration: Temporal & Argo | Upcoming |
-| Systems design tradeoffs for evolving platforms | Upcoming |
+| Borg/Mesos-like, cloud networking, Cilium/eBPF, mesh, security, Terraform/Atlantis, Temporal/Argo, design tradeoffs | Upcoming |
 
-Curriculum metadata lives in [`curriculum.json`](./curriculum.json) (`next_lesson`, completed dates, `refreshedAt`).
-
----
-
-## How daily lessons work
-
-1. **One lesson per day** on a JD-aligned topic.
-2. Each lesson targets production depth:
-   - Diagram (PNG in this repo)
-   - Concrete commands / config
-   - **Failures & fixes** (symptoms → causes → mitigations)
-   - Real reference URLs
-   - Interview soundbites
-   - Self-check prompt
-3. Lessons are **appended** to the living one-pager (older lessons stay; refreshed lessons get a `refreshed` date).
-4. Diagrams stay stable filenames so links don’t rot (`hyperscale-fleet-topology.png`, `k8s-control-plane-at-scale.png`, …).
-
----
-
-## How to read the one-pager
-
-1. Open [`hyperscale-one-pager.md`](./hyperscale-one-pager.md).
-2. **Interview crunch:** read the newest lessons first; use soundbites + Failures & fixes tables as flashcards.
-3. **Deep prep:** read Lesson 1 → 2 → … in order — later lessons assume the cell/fleet vocabulary.
-4. Open the linked PNGs while reading; each lesson tells you how to read the diagram top-down.
-5. Do the **Quick self-check** out loud before the next lesson.
+Metadata: [`curriculum.json`](./curriculum.json). Writing rules: [Conventions](https://caretak3r.github.io/hyperscale-prep/conventions/).
 
 ---
 
@@ -72,20 +56,27 @@ Curriculum metadata lives in [`curriculum.json`](./curriculum.json) (`next_lesso
 ```
 .
 ├── README.md
-├── curriculum.json          # progress + next lesson
-├── hyperscale-one-pager.md  # living study doc
-├── hyperscale-fleet-topology.png
-├── k8s-control-plane-at-scale.png
-└── .gitignore
+├── package.json
+├── next.config.js          # output:'export', basePath /hyperscale-prep
+├── theme.config.tsx        # Nextra theme — "Hyperscale Prep"
+├── pages/                  # MDX docs (Nextra pages router)
+│   ├── index.mdx
+│   ├── conventions.mdx
+│   ├── lessons/
+│   └── archive/
+├── public/                 # PNGs, favicon
+├── hyperscale-one-pager.md # flat archive (superseded by docs/lessons)
+├── curriculum.json
+└── .github/workflows/deploy.yml
 ```
 
 ---
 
-## Contributing / local use
+## Deploy
 
-- Edit only under this tree; keep secrets out (see `.gitignore` for `.env`, etc.).
-- Prefer updating the living one-pager over creating parallel notes files.
-- When refreshing a lesson, keep the original date and add `refreshed YYYY-MM-DD`.
+Push to `main` runs [`.github/workflows/deploy.yml`](./.github/workflows/deploy.yml): `npm ci` → `npm run build` → upload `out/` → GitHub Pages.
+
+Repo **Settings → Pages → Build and deployment → Source** should be **GitHub Actions** (the workflow sets this via API when possible).
 
 ---
 
