@@ -1,4 +1,5 @@
 {
   "01-hyperscale-mental-model": "01 — Hyperscale mental model",
-  "02-k8s-control-plane": "02 — K8s control plane"
+  "02-k8s-control-plane": "02 — K8s control plane",
+  "03-cluster-provisioning-lifecycle": "03 — Cluster provisioning"
 }

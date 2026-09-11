@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 3,
+  "next_lesson": 4,
   "completed": [
     {
       "n": 1,
@@ -14,10 +14,14 @@
       "title": "Kubernetes control plane internals at scale",
       "date": "2026-09-09",
       "refreshedAt": "2026-09-10"
+    },
+    {
+      "n": 3,
+      "title": "Cluster provisioning & lifecycle systems",
+      "date": "2026-09-11"
     }
   ],
   "upcoming": [
-    "Cluster provisioning & lifecycle systems",
     "Borg/Mesos-like orchestration patterns",
     "Cloud networking: VPC, peering, Shared VPC, Transit Gateway",
     "Cloud Interconnect / Direct Connect, Cloud NAT, BGP & route control",
