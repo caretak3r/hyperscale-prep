@@ -35,14 +35,14 @@ flowchart LR
     TF[Atlantis / Terraform]
     MGMT[CAPI mgmt cluster]
     CTRL[CAPI controllers]
-    BOOT[bootstrap<br/>cloud-init / kubeadm / managed CP]
+    BOOT["bootstrap<br/>cloud-init / kubeadm / managed CP"]
   end
 
   subgraph Waves["Fleet waves"]
     CAN[Canary cell]
-    G1{health gate}
+    G1{"health gate"}
     W1[Wave 1]
-    G2{health gate}
+    G2{"health gate"}
     WN[Wave N]
   end
 
@@ -68,16 +68,16 @@ sequenceDiagram
   participant TF as Terraform / cloud API
   participant CP as Control plane
   participant MD as MachineDeployment
-  participant N as Node (cloud-init)
+  participant N as Node cloud-init
   participant AD as Addon controllers
 
   LF->>TF: ensure VPC, subnets, IAM, SG, LB
-  LF->>CP: create/reconcile Cluster + KubeadmControlPlane (or managed CP)
+  LF->>CP: create/reconcile Cluster and control plane
   CP-->>LF: apiserver endpoint Ready
   LF->>MD: scale Machines (pinned MachineImage)
   MD->>N: instance + cloud-init join
-  N-->>CP: Node Registered / Ready (kubelet)
-  LF->>AD: roll CNI → CSI → policy → observability
+  N-->>CP: Node Registered Ready kubelet
+  LF->>AD: roll CNI then CSI then policy then observability
   AD-->>LF: ClusterReadyForWorkload=True
 ```
 
@@ -177,20 +177,20 @@ kubectl describe node $NODE | sed -n '/Conditions:/,/Addresses:/p'
 flowchart TB
   subgraph Gate["Health gate (per cell)"]
     H1[ControlPlaneReady]
-    H2[CNI/CSI Ready]
-    H3[NPD critical = 0]
+    H2["CNI/CSI Ready"]
+    H3["NPD critical = 0"]
     H4[synthetic probe pass]
     H5[error budget OK]
   end
 
-  REQ[MachineImage / k8s minor bump] --> CAN[Canary: 1–2 cells]
+  REQ["MachineImage / k8s minor bump"] --> CAN["Canary: 1-2 cells"]
   CAN --> Gate
-  Gate -->|fail| ROLL[halt wave + auto-rollback image pin]
-  Gate -->|pass| W1[Wave 1: 10%]
+  Gate -->|fail| ROLL["halt wave + auto-rollback image pin"]
+  Gate -->|pass| W1["Wave 1: 10%"]
   W1 --> Gate
-  Gate -->|pass| W2[Wave 2: 30%]
+  Gate -->|pass| W2["Wave 2: 30%"]
   W2 --> Gate
-  Gate -->|pass| W3[Wave 3: remainder]
+  Gate -->|pass| W3["Wave 3: remainder"]
 ```
 
 **Product decisions you must own:**

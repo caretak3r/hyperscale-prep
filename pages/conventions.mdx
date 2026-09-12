@@ -63,3 +63,11 @@ Static export (what GitHub Pages serves):
 npm run build
 # output in out/
 ```
+
+## Mermaid gotchas (v10)
+
+- Never put `|` inside cylinder/stadium shapes — use `"etcd 3 or 5"` not `[(etcd 3|5)]`.
+- Quote node labels that contain `/`, `%`, `:`, or `<br/>`.
+- Prefer ASCII hyphens over en-dashes (`1-2` not `1–2`).
+- Decision nodes: `ID{"label"}` (quoted).
+- Avoid Unicode arrows (`→`) in labels/messages — use `then` / `to`.

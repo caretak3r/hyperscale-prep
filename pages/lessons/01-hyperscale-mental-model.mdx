@@ -30,8 +30,8 @@ flowchart TB
   end
 
   subgraph R1["Region us-east-1"]
-    C1[Cell A<br/>general]
-    C2[Cell B<br/>GPU]
+    C1["Cell A<br/>general"]
+    C2["Cell B<br/>GPU"]
     C3[Cell canary]
   end
 
@@ -45,7 +45,7 @@ flowchart TB
 
   subgraph CellZoom["Inside a cell"]
     CP[Control plane]
-    PG[general pool<br/>on-demand]
+    PG["general pool<br/>on-demand"]
     PS[spot-batch pool]
     PR[fleet-probes]
   end

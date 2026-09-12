@@ -34,10 +34,10 @@ flowchart TB
     A3[apiserver]
     CACHE[Watch cache]
     APF[API Priority & Fairness]
-    ADM[Admission<br/>mutating → validating]
+    ADM["Admission<br/>mutating then validating"]
   end
 
-  subgraph ETCD["etcd quorum 3|5"]
+  subgraph ETCD["etcd quorum (3 or 5)"]
     E1[(etcd)]
     E2[(etcd)]
     E3[(etcd)]
@@ -73,7 +73,7 @@ flowchart LR
   TLS --> AZ[authz RBAC/Node]
   AZ --> MUT[mutating admission]
   MUT --> VAL[validating admission]
-  VAL --> DEC{write?}
+  VAL --> DEC{"write?"}
   DEC -->|yes| ETCD[(etcd write)]
   DEC -->|read| WC[watch cache]
   ETCD --> FAN[watch fan-out]
@@ -180,11 +180,11 @@ flowchart TB
   LB --> A1[apiserver]
   LB --> A2[apiserver]
   LB --> A3[apiserver]
-  A1 --> E[(etcd 3|5)]
+  A1 --> E[("etcd 3 or 5")]
   A2 --> E
   A3 --> E
-  E --> KCM[controller-manager<br/>leader election]
-  E --> SCH[scheduler<br/>leader election]
+  E --> KCM["controller-manager<br/>leader election"]
+  E --> SCH["scheduler<br/>leader election"]
   E --> CCM[cloud-controller-manager]
 ```
 
