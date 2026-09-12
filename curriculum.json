@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 4,
+  "next_lesson": 5,
   "completed": [
     {
       "n": 1,
@@ -19,10 +19,14 @@
       "n": 3,
       "title": "Cluster provisioning & lifecycle systems",
       "date": "2026-09-11"
+    },
+    {
+      "n": 4,
+      "title": "Borg/Mesos-like orchestration patterns",
+      "date": "2026-09-12"
     }
   ],
   "upcoming": [
-    "Borg/Mesos-like orchestration patterns",
     "Cloud networking: VPC, peering, Shared VPC, Transit Gateway",
     "Cloud Interconnect / Direct Connect, Cloud NAT, BGP & route control",
     "Edge load balancing & DDoS (Cloud Armor / AWS Shield)",
