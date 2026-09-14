@@ -28,6 +28,8 @@ This site builds that mental model lesson by lesson.
    - Real reference URLs
    - Interview soundbites
    - Self-check prompt
+3. Also covers **AI/ML platform engineering** (GPU fleets / inference serving) using [wafer-ai/gpu-perf-engineering-resources](https://github.com/wafer-ai/gpu-perf-engineering-resources) as curriculum fuel — operator depth, not CUDA tutorials.
+
 3. Future lessons live as MDX under [`lessons/`](/lessons/01-hyperscale-mental-model) — see [Conventions](/conventions).
 4. The original [`hyperscale-one-pager.md`](https://github.com/caretak3r/hyperscale-prep/blob/main/hyperscale-one-pager.md) is kept as an [archive](/archive/one-pager); the docs site is the canonical reading path.
 
@@ -39,7 +41,9 @@ This site builds that mental model lesson by lesson.
 | 2 | [Kubernetes control plane internals at scale](/lessons/02-k8s-control-plane) | Done |
 | 3 | [Cluster provisioning & lifecycle systems](/lessons/03-cluster-provisioning-lifecycle) | Done |
 | 4 | [Borg/Mesos-like orchestration patterns](/lessons/04-borg-mesos-orchestration) | Done |
-| — | Cloud networking, Cilium/eBPF, mesh, security, Terraform/Atlantis, Temporal/Argo, design tradeoffs | Upcoming |
+| 5 | [Cloud networking: VPC, peering, Shared VPC, Transit Gateway](/lessons/05-cloud-networking-vpc-tgw) | Done |
+| — | Interconnect/DX, NAT/BGP, edge LB/DDoS, Cilium/eBPF, mesh, security, Terraform/Atlantis, Temporal/Argo, design tradeoffs | Upcoming |
+| — | **AI/ML platform track** (GPU fleets, topology/NCCL, gang/queues, inference SLOs, disaggregation, DCGM) — fueled by [wafer-ai/gpu-perf-engineering-resources](https://github.com/wafer-ai/gpu-perf-engineering-resources) | Upcoming |
 
 Progress metadata: [`curriculum.json`](https://github.com/caretak3r/hyperscale-prep/blob/main/curriculum.json).
 

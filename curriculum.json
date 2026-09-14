@@ -1,5 +1,5 @@
 {
-  "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC",
+  "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
   "next_lesson": 6,
   "completed": [
@@ -41,7 +41,17 @@
     "Node/container hardening & supply-chain provenance",
     "IaC: Terraform + Atlantis at fleet scale",
     "Workflow orchestration: Temporal & Argo Workflows",
-    "Systems design tradeoffs for rapidly evolving platforms"
+    "Systems design tradeoffs for rapidly evolving platforms",
+    "AI/ML platform: GPU node pools, device plugins, MIG/time-slicing, SKU isolation",
+    "AI/ML platform: GPU topology \u2014 NVLink/NVSwitch, multi-NIC RDMA, GPUDirect, NCCL",
+    "AI/ML platform: training/inference scheduling \u2014 gang, Kueue/Volcano, fair-share queues",
+    "AI/ML platform: inference serving SLOs \u2014 TTFT/TPOT/goodput, continuous batching, KV cache as capacity",
+    "AI/ML platform: prefill/decode disaggregation & MoE serving topology on the fleet",
+    "AI/ML platform: GPU observability \u2014 DCGM, NCCL tests, roofline capacity planning"
   ],
-  "site_url": "https://caretak3r.github.io/hyperscale-prep/"
+  "site_url": "https://caretak3r.github.io/hyperscale-prep/",
+  "sources": {
+    "wafer_gpu_perf": "https://github.com/wafer-ai/gpu-perf-engineering-resources",
+    "note": "Use as curriculum fuel for AI/ML platform lessons \u2014 operator/platform depth (SKU pools, topology, schedulers, serving SLOs, NCCL/RDMA), not a CUDA-kernel course."
+  }
 }
