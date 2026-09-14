@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 6,
+  "next_lesson": 7,
   "completed": [
     {
       "n": 1,
@@ -29,10 +29,14 @@
       "n": 5,
       "title": "Cloud networking: VPC, peering, Shared VPC, Transit Gateway",
       "date": "2026-09-13"
+    },
+    {
+      "n": 6,
+      "title": "Cloud Interconnect / Direct Connect, Cloud NAT, BGP & route control",
+      "date": "2026-09-14"
     }
   ],
   "upcoming": [
-    "Cloud Interconnect / Direct Connect, Cloud NAT, BGP & route control",
     "Edge load balancing & DDoS (Cloud Armor / AWS Shield)",
     "Cluster networking: CNI, Cilium, eBPF fundamentals",
     "NetworkPolicy, multi-NIC, sFlow",
