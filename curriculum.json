@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 7,
+  "next_lesson": 8,
   "completed": [
     {
       "n": 1,
@@ -34,10 +34,14 @@
       "n": 6,
       "title": "Cloud Interconnect / Direct Connect, Cloud NAT, BGP & route control",
       "date": "2026-09-14"
+    },
+    {
+      "n": 7,
+      "title": "Edge load balancing & DDoS (Cloud Armor / AWS Shield)",
+      "date": "2026-09-15"
     }
   ],
   "upcoming": [
-    "Edge load balancing & DDoS (Cloud Armor / AWS Shield)",
     "Cluster networking: CNI, Cilium, eBPF fundamentals",
     "NetworkPolicy, multi-NIC, sFlow",
     "Service mesh: Istio/Envoy/Linkerd & mTLS",
