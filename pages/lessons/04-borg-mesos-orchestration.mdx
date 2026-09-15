@@ -280,6 +280,33 @@ spec:
 | Custom scheduler pods never bind | Multi-scheduler: `schedulerName` mismatch | Align `spec.schedulerName` with non-default scheduler Deployment |
 | Namespace “has quota” but still starves | ResourceQuota vs Priority; fair-share missing | Add queueing layer; per-team ResourceQuota + PriorityClass matrix |
 
+## Security & hardening
+
+Scheduling policy is **multi-tenant security**. Priority, quota, and taints decide whether a hostile batch Job can starve secured serving or land on sensitive SKUs.
+
+| Control | Operator practice |
+|---|---|
+| PriorityClass abuse | Bound who can create high PriorityClass; protect system / serving bands |
+| ResourceQuota fence | Soft multi-tenant fence per namespace/team — CPU/GPU/memory caps |
+| Taints for sensitive SKUs | GPU inference / HSM-adjacent / regulated pools: taint + explicit tolerations only |
+| Batch vs serving policy | Don’t let BestEffort batch preempt or co-reside with secured serving without policy |
+
+```yaml
+# Sensitive GPU pool — require explicit toleration + PriorityClass
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: prod-inference-p1
+value: 100000
+globalDefault: false
+description: "Prod inference only; RBAC-gated"
+---
+# Node: taint gpu-sku=inference:NoSchedule
+# Pod: tolerations + priorityClassName: prod-inference-p1 + ResourceQuota on nvidia.com/gpu
+```
+
+**AI/ML fleets:** isolate training vs inference node pools; gate who can schedule onto GPU SKUs that hold loaded weights in memory. ResourceQuota + queueing (Kueue) prevents one team’s training wave from exhausting capacity used by authenticated inference — treat GPU time as a secured resource, not a free-for-all.
+
 ## Interview soundbites
 
 - **“Kubernetes is Borg-inspired, not Borg.”** Shared ideas: cells≈clusters, Borglet≈kubelet, jobs/tasks≈Pods, priority/preemption. Missing Borg allocs and first-class cell oversubscription — you reconstruct them with QoS, PriorityClass, and node pools.

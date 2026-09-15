@@ -37,10 +37,25 @@ Every lesson should include, in roughly this order:
 3. **Idiosyncrasies you only learn in production**
 4. **Concrete commands & config**
 5. **Failures & fixes** table — symptom → likely root cause → fix / mitigation
-6. **Interview soundbites**
-7. **How this maps to the JD**
-8. **References** (real URLs)
-9. **Quick self-check**
+6. **Security & hardening** — dedicated, required (not optional); concrete controls + AI/ML angle when relevant
+7. **Interview soundbites**
+8. **How this maps to the JD**
+9. **Watch (talks & demos)** — required when good public talks exist (see below)
+10. **References** (real URLs)
+11. **Quick self-check**
+
+## Security emphasis
+
+Every lesson must stress **hardening as operator work**, not a bolted-on appendix. Put concrete controls (RBAC, network segmentation, short-lived creds, admission, origin lock-down, etc.) in the dedicated **Security & hardening** section after Failures & fixes.
+
+**AI/ML platform lessons** must explicitly cover **model weights, checkpoints, container images, and deployment provenance**:
+
+- Private registries; signed images / provenance (cosign / SLSA mindset); no unsigned deploy to prod
+- Bucket IAM + encryption for weights/checkpoints; no world-readable object stores
+- Least privilege to pull artifacts; scan / SBOM posture on runtime and base images
+- Inference/training deployments: admission gates, network policy, secrets hygiene, GPU pool isolation
+
+The **Watch** section remains required when applicable (KubeCon / re:Invent / CNCF talks).
 
 ## Voice
 
@@ -74,7 +89,7 @@ npm run build
 
 ## AI/ML platform track
 
-In addition to the hyperscale JD arc, lessons also pull **platform-engineering** themes from [wafer-ai/gpu-perf-engineering-resources](https://github.com/wafer-ai/gpu-perf-engineering-resources): GPU fleets, topology (NVLink/RDMA/NCCL), gang/queue scheduling, inference serving SLOs (TTFT/TPOT/KV cache), and disaggregated serving — framed for operators who run the fabric, not for writing CUDA kernels from scratch.
+In addition to the hyperscale JD arc, lessons also pull **platform-engineering** themes from [wafer-ai/gpu-perf-engineering-resources](https://github.com/wafer-ai/gpu-perf-engineering-resources): GPU fleets, topology (NVLink/RDMA/NCCL), gang/queue scheduling, inference serving SLOs (TTFT/TPOT/KV cache), and disaggregated serving — framed for operators who run the fabric, not for writing CUDA kernels from scratch. Pair that with **Security emphasis**: weights, checkpoints, images, and inference endpoints are first-class hardening targets.
 
 ## Watch sections (YouTube)
 

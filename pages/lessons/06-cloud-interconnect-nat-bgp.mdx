@@ -243,6 +243,27 @@ spec:
 | Failover took 15+ minutes | No BFD / long BGP timers; human ticket | Tune timers carefully; document RTO; rehearse cutover |
 | Overlapping `10.10.0.0/16` on-prem and in cloud | IPAM failure across orgs | NAT/proxy boundary or renumber; never dual-advertise overlap |
 
+## Security & hardening
+
+Hybrid routing mistakes are **security incidents waiting for a traceroute**. Prefix-list hygiene and “NAT is not a firewall” belong in every DX design review.
+
+| Control | Operator practice |
+|---|---|
+| Prefix-list hygiene | Deny `0.0.0.0/0` (and unexpected summaries) into corp; alert on new announcements |
+| NAT ≠ security boundary | NAT hides source IPs; it does not authenticate or authorize — use Private Link + IAM |
+| Encrypt over DX when required | MACSec / VPN overlay / app TLS when compliance demands encryption in transit |
+| Asymmetric path footgun | Different firewalls on forward vs return = blackholes **and** bypassed inspection |
+
+```bash
+# BGP: what are we advertising / accepting? (sketch — vendor CLI varies)
+# show ip bgp neighbors <peer> advertised-routes
+# show ip bgp neighbors <peer> routes
+# Prefix-list policy: deny 0.0.0.0/0 from corp peer unless explicitly designed
+aws directconnect describe-bgp-peers --virtual-interface-id dxvif-xxx
+```
+
+**AI/ML fleets:** corp ↔ cloud paths that can reach weight buckets or training data lakes need the same prefix filters as any PCI path. Prefer Private Link for artifact registries over hairpinning pulls through NAT “because it worked.” Encrypt hybrid hops when checkpoints cross the DX boundary.
+
 ## Interview soundbites
 
 - **“DX is an attachment to the hub, not a special snowflake per VPC.”** Cells attach to TGW/Cloud Router; the hub peers BGP to on-prem.

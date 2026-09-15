@@ -241,6 +241,27 @@ gcloud compute backend-services describe api-backend --global \
 | Cloud Armor policy “attached” but not enforcing | Attached to wrong backend service / not on the live URL map path | Trace URL map → backend service → security policy |
 | NLB/EIP under UDP flood | Expectation that Shield Standard = infinite; app protocol amplifies | GA + Shield Advanced; protocol hardening; avoid open amplifiers |
 
+## Security & hardening
+
+Edge is where **hostile traffic dies** and where you refuse to expose model APIs naked. Origin lock-down + WAF discipline is the difference between Shield theater and real defense.
+
+| Control | Operator practice |
+|---|---|
+| Origin lock-down | ALB/NEG only from edge (OAC/OAI, SG prefix lists, private LB) — no public shortcut |
+| WAF count-then-block | New rules in count/observe; then block; rate limits on inference paths |
+| TLS everywhere | Edge terminates TLS; re-encrypt to origin when policy requires |
+| Authn at edge for models | No anonymous public inference endpoints; API keys / JWT / mTLS before the cell |
+| Rate-limit inference APIs | Per-IP / per-token quotas — GPU burn is both cost and abuse vector |
+
+```bash
+# Origin must not accept the world
+aws ec2 describe-security-groups --group-ids sg-origin   --query 'SecurityGroups[0].IpPermissions'
+# Cloud Armor / WAF: rate-based rule on /v1/completions (count first)
+gcloud compute security-policies rules list POLICY
+```
+
+**AI/ML fleets:** model weights and inference endpoints are high-value targets — do not put a public ALB on a GPU serving Deployment “because Shield Standard exists.” Require authn at the edge, rate-limit tokens, and keep origins private so scrapers cannot exfiltrate models via unauthenticated inference or steal capacity.
+
 ## Interview soundbites
 
 - **“Shield Standard is the floor, not the architecture.”** Anycast edge + private origins is the design; Standard rides along.

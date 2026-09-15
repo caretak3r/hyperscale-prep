@@ -212,6 +212,35 @@ Horizontal scale: **more apiservers**. Vertical / careful scale: **etcd**. Contr
 | Post-upgrade: watch reconnect stampede, brief outage | Rolling apiserver without enough capacity for reconnect | Surge apiserver replicas before bounce; staggered shutdown; verify APF; soak canary cell first (Lesson 1 wave) |
 | Cloud Node objects stale; routes missing | cloud-controller-manager rate-limited or wrong credentials | CCM logs; cloud API quotas; verify instance tags/VPC; don’t run two CCMs active |
 
+## Security & hardening
+
+The apiserver is the **policy chokepoint** for the cell: authn, authz, admission, and audit all sit on the request path. Hardening here beats bolting scanners on after the fact.
+
+| Control | Operator practice |
+|---|---|
+| RBAC + Node authorizer | Least privilege for humans, CI, and kubelets; Node authorizer limits what a node can read |
+| Admission as policy gate | PSS / Kyverno / OPA Gatekeeper / ValidatingAdmissionPolicy — fail-closed for security, with break-glass |
+| Audit logs | Ship audit to immutable storage; alert on `get secrets`, anonymous, and privilege escalations |
+| etcd encryption at rest | Encrypt Secrets (and prefer external KMS); lock down etcd peers to control-plane only |
+| Break-glass | Documented local-cert admin path; time-boxed, audited, never the daily driver |
+| Webhook supply chain | Pin webhook images; least-privilege SA; mTLS to webhook; treat slow/unknown webhooks as risk |
+
+```yaml
+# Sketch: encryption-at-rest for Secrets (apiserver --encryption-provider-config)
+apiVersion: apiserver.config.k8s.io/v1
+kind: EncryptionConfiguration
+resources:
+  - resources: ["secrets"]
+    providers:
+      - aescbc:
+          keys:
+            - name: key1
+              secret: <base64-32-byte-key>
+      - identity: {}
+```
+
+**AI/ML fleets:** admission must gate unsigned model/runtime images and deny world-readable Secret mounts for weight pullers. Audit who can create Jobs that mount checkpoint volumes; a malicious training Job with cluster-admin is a weight-exfiltration path.
+
 ## Interview soundbites (steal these)
 
 1. **“Apiserver is horizontally scalable; etcd is the consistency bottleneck.”** I size cells so etcd stays boring.

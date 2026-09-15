@@ -223,6 +223,28 @@ flowchart TB
 | Spot pool never reaches desired | AZ capacity + interruption; oversubscribed ASG | On-demand floor; multi-AZ; diversify instance families; don’t gate prod readiness on spot alone |
 | Join works in canary, fails in Wave 2 | Regional AMI replication lag / different subnet tags / IAM path typo in class | Preflight: image available in all AZs/regions; validate ClusterClass render per region before wave |
 
+## Security & hardening
+
+Provisioning is when you bake **immutable, least-privilege foundations**. A bad AMI, long-lived join cred, or over-powered instance profile becomes every node’s attack surface for the life of the wave.
+
+| Control | Operator practice |
+|---|---|
+| CIS-baked MachineImages | Golden AMI/OS image with CIS baselines; pin digests; canary before fleet wave |
+| Short-lived join creds | Bootstrap tokens / TPM / cloud identity — never permanent join secrets |
+| IAM instance profiles | Node role: pull images, describe instances, write logs — not `*` on S3 or IAM |
+| No long-lived kubeconfigs on disk | Prefer cloud identity / OIDC; break-glass kubeconfigs offline + rotated |
+| Immutable infra | Nodes replaced, not SSH-patched; userdata is declarative and reviewed |
+
+```bash
+# Spot-check: node instance profile should not be a god role
+aws iam get-instance-profile --instance-profile-name nodes-general
+aws iam list-attached-role-policies --role-name nodes-general
+# Join tokens should expire (kubeadm-style); alert if bootstrap tokens linger
+kubectl -n kube-system get secrets -l kubernetes.io/legacy-token-user=...
+```
+
+**AI/ML fleets:** GPU AMIs and device-plugin DaemonSets are part of the supply chain — sign/pin images, private registries only, and give node profiles **least privilege to pull** model/base images (no world-readable weight buckets). Checkpoint and artifact buckets get KMS + bucket IAM separate from general node roles.
+
 ## Interview soundbites (steal these)
 
 1. **“Provisioning is a control loop, not a script.”** Desired state in Git; CAPI/managed APIs reconcile; humans merge PRs and watch gates.

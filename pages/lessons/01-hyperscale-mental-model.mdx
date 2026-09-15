@@ -176,6 +176,25 @@ Design for **partial failure**: retries with jitter, zone-aware scheduling, mult
 | Two sources of truth: Terraform says 102 clusters, CAPI says 97 | Drift: manual cloud deletes, failed reconciles, orphaned state | Make reconciler authoritative; periodic audit job; block human console deletes in prod orgs |
 | Identity outage: all cells reject deploy SA tokens | Central OIDC/IdP dependency without per-cell break-glass | Cache/JWKS strategy; emergency local cert admin kubeconfig in offline safe; document break-glass (Lesson 2 admission angle) |
 
+## Security & hardening
+
+At fleet scale, **blast-radius isolation is a security control**, not only an availability story. A compromised cell, leaked deploy SA, or poisoned admission webhook should not become a company-wide incident — that is why cells exist.
+
+| Control | Operator practice |
+|---|---|
+| Cell as blast radius | Separate control planes, CIDRs, and identity trust domains per cell |
+| Least privilege across cells | No shared “god” cluster admin; fleet plane SAs scoped per cell / per action |
+| Secrets posture | Secrets never live in a shared mgmt “god” cluster as the only copy; break-glass is offline + audited |
+| Tenancy split | Prod vs sandbox (and often training vs serving) on separate orgs / projects / TGW route tables |
+
+```bash
+# Inventory: which identities can mutate every cell? (smell = one SA everywhere)
+kubectl --context fleet-mgmt get clusterrolebindings -o wide
+# Prefer per-cell RoleBindings + short-lived OIDC tokens over long-lived shared kubeconfigs
+```
+
+**AI/ML fleets:** treat model-weight buckets, checkpoint stores, and GPU node pools as high-value tenancy. Sandbox training cells must not share pull credentials or registry write paths with prod inference cells — isolate weights/checkpoints/images the same way you isolate blast radius.
+
 ## Interview soundbites (steal these)
 
 1. **“Cluster = blast-radius boundary.”** I size cells so a control-plane or CNI incident doesn’t take the company down.

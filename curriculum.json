@@ -1,5 +1,5 @@
 {
-  "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources",
+  "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening \u2014 especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
   "next_lesson": 8,
   "completed": [
@@ -45,8 +45,10 @@
     "Cluster networking: CNI, Cilium, eBPF fundamentals",
     "NetworkPolicy, multi-NIC, sFlow",
     "Service mesh: Istio/Envoy/Linkerd & mTLS",
-    "Cluster security: PSS, admission, RBAC, IAM least privilege",
-    "Node/container hardening & supply-chain provenance",
+    "Cluster security: PSS, admission, RBAC, IAM least privilege & audit",
+    "Node/container hardening & supply-chain provenance (images, SBOM, signing)",
+    "AI/ML security: model weights & checkpoint hardening (registry, signing, bucket IAM, encryption)",
+    "AI/ML security: securing inference/training deployments (admission, network policy, secrets, GPU isolation)",
     "IaC: Terraform + Atlantis at fleet scale",
     "Workflow orchestration: Temporal & Argo Workflows",
     "Systems design tradeoffs for rapidly evolving platforms",
@@ -60,6 +62,6 @@
   "site_url": "https://caretak3r.github.io/hyperscale-prep/",
   "sources": {
     "wafer_gpu_perf": "https://github.com/wafer-ai/gpu-perf-engineering-resources",
-    "note": "Use as curriculum fuel for AI/ML platform lessons \u2014 operator/platform depth (SKU pools, topology, schedulers, serving SLOs, NCCL/RDMA), not a CUDA-kernel course."
+    "note": "Use as curriculum fuel for AI/ML platform lessons \u2014 operator/platform depth (SKU pools, topology, schedulers, serving SLOs, NCCL/RDMA) plus security/model-weight hardening (private registries, signing/provenance, bucket IAM, encrypted checkpoints, secured inference deployments). Not a CUDA-kernel course."
   }
 }

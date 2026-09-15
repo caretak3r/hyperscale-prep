@@ -25,11 +25,12 @@ This site builds that mental model lesson by lesson.
    - Diagram (PNG + Mermaid)
    - Concrete commands / config
    - **Failures & fixes** (symptoms → causes → mitigations)
+   - **Security & hardening** (operator controls; AI/ML weights/images/deployments when relevant)
    - Real reference URLs
    - Interview soundbites
    - Self-check prompt
    - **Watch** — YouTube talks/demos when applicable
-3. Also covers **AI/ML platform engineering** (GPU fleets / inference serving) using [wafer-ai/gpu-perf-engineering-resources](https://github.com/wafer-ai/gpu-perf-engineering-resources) as curriculum fuel — operator depth, not CUDA tutorials.
+3. Also covers **AI/ML platform engineering** (GPU fleets / inference serving) using [wafer-ai/gpu-perf-engineering-resources](https://github.com/wafer-ai/gpu-perf-engineering-resources) as curriculum fuel — operator depth, not CUDA tutorials — including **model/weight hardening**, private registries, signing/provenance, and secured inference deployments.
 4. Future lessons live as MDX under [`lessons/`](/lessons/01-hyperscale-mental-model) — see [Conventions](/conventions).
 5. The original [`hyperscale-one-pager.md`](https://github.com/caretak3r/hyperscale-prep/blob/main/hyperscale-one-pager.md) is kept as an [archive](/archive/one-pager); the docs site is the canonical reading path.
 
@@ -45,7 +46,7 @@ This site builds that mental model lesson by lesson.
 | 6 | [Cloud Interconnect / Direct Connect, Cloud NAT, BGP & route control](/lessons/06-cloud-interconnect-nat-bgp) | Done |
 | 7 | [Edge load balancing & DDoS (Cloud Armor / AWS Shield)](/lessons/07-edge-lb-ddos-armor-shield) | Done |
 | — | Cilium/eBPF, mesh, security, Terraform/Atlantis, Temporal/Argo, design tradeoffs | Upcoming |
-| — | **AI/ML platform track** (GPU fleets, topology/NCCL, gang/queues, inference SLOs, disaggregation, DCGM) — fueled by [wafer-ai/gpu-perf-engineering-resources](https://github.com/wafer-ai/gpu-perf-engineering-resources) | Upcoming |
+| — | **AI/ML platform track** (GPU fleets, topology/NCCL, gang/queues, inference SLOs, disaggregation, DCGM, **security/model hardening**) — fueled by [wafer-ai/gpu-perf-engineering-resources](https://github.com/wafer-ai/gpu-perf-engineering-resources) | Upcoming |
 
 Progress metadata: [`curriculum.json`](https://github.com/caretak3r/hyperscale-prep/blob/main/curriculum.json).
 

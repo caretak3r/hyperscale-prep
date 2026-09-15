@@ -262,6 +262,26 @@ spec:
 | Cross-account peering works, DNS does not | Private DNS not linked | Associate Route53 private hosted zones / Cloud DNS peering both sides |
 | “Connected” but asymmetric blackhole | Only one direction of routes installed | Always pair routes; test from **both** ends |
 
+## Security & hardening
+
+The VPC/TGW fabric is your **network trust boundary**. Security groups and NACLs enforce intent; route-table segmentation keeps prod from trusting nonprod “just for debugging.”
+
+| Control | Operator practice |
+|---|---|
+| Security groups / NACLs | Least-privilege ingress; ephemeral return paths; no `0.0.0.0/0` on app ports |
+| Route-table segmentation | Separate TGW RTs for prod / nonprod / shared — association is policy |
+| Private Link over flat mesh | Prefer PSC/PrivateLink for shared data & registries vs opening full CIDR mesh |
+| No overlapping CIDR exceptions | Temporary overlaps become permanent exfiltration paths; renumber or proxy |
+
+```bash
+# Prove segmentation: cell VPC should not route to nonprod via TGW
+aws ec2 search-transit-gateway-routes   --transit-gateway-route-table-id tgw-rtb-prod   --filters Name=route-search.subnet-of-match,Values=10.20.0.0/16
+# SG: deny unexpected peer CIDRs; prefer prefix lists for shared services
+aws ec2 describe-security-groups --group-ids sg-app   --query 'SecurityGroups[].IpPermissions'
+```
+
+**AI/ML fleets:** put model-weight object stores and private container registries on Private Link / PSC — not flat TGW reachability from every sandbox cell. GPU training VPCs get egress to artifact registries only; inference VPCs get pull-only paths. Never “temporary” overlap a training CIDR with prod serving.
+
 ## Interview soundbites
 
 - **“Peering is not transitive — that is the whole joke.”** If you need spoke-to-spoke via a hub, say Transit Gateway (or equivalent), not a peering mesh.
