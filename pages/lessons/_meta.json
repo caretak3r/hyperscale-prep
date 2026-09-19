@@ -1,12 +1,13 @@
 {
-  "01-hyperscale-mental-model": "01 \u2014 Hyperscale mental model",
-  "02-k8s-control-plane": "02 \u2014 K8s control plane",
-  "03-cluster-provisioning-lifecycle": "03 \u2014 Cluster provisioning",
-  "04-borg-mesos-orchestration": "04 \u2014 Borg/Mesos orchestration",
-  "05-cloud-networking-vpc-tgw": "05 \u2014 Cloud networking (VPC/TGW)",
-  "06-cloud-interconnect-nat-bgp": "06 \u2014 Interconnect / NAT / BGP",
-  "07-edge-lb-ddos-armor-shield": "07 \u2014 Edge LB / DDoS / Armor",
-  "08-cni-cilium-ebpf": "08 \u2014 CNI / Cilium / eBPF",
-  "09-networkpolicy-multi-nic-sflow": "09 \u2014 NetworkPolicy / multi-NIC / sFlow",
-  "10-service-mesh-istio-linkerd-mtls": "10 \u2014 Service mesh / mTLS"
+  "01-hyperscale-mental-model": "01 — Hyperscale mental model",
+  "02-k8s-control-plane": "02 — K8s control plane",
+  "03-cluster-provisioning-lifecycle": "03 — Cluster provisioning",
+  "04-borg-mesos-orchestration": "04 — Borg/Mesos orchestration",
+  "05-cloud-networking-vpc-tgw": "05 — Cloud networking (VPC/TGW)",
+  "06-cloud-interconnect-nat-bgp": "06 — Interconnect / NAT / BGP",
+  "07-edge-lb-ddos-armor-shield": "07 — Edge LB / DDoS / Armor",
+  "08-cni-cilium-ebpf": "08 — CNI / Cilium / eBPF",
+  "09-networkpolicy-multi-nic-sflow": "09 — NetworkPolicy / multi-NIC / sFlow",
+  "10-service-mesh-istio-linkerd-mtls": "10 — Service mesh / mTLS",
+  "11-cluster-security-pss-admission-rbac": "11 — Cluster security / PSS / RBAC"
 }

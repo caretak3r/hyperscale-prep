@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening — especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 11,
+  "next_lesson": 12,
   "completed": [
     {
       "n": 1,
@@ -54,10 +54,14 @@
       "n": 10,
       "title": "Service mesh: Istio/Envoy/Linkerd & mTLS",
       "date": "2026-09-18"
+    },
+    {
+      "n": 11,
+      "title": "Cluster security: PSS, admission, RBAC, IAM least privilege & audit",
+      "date": "2026-09-19"
     }
   ],
   "upcoming": [
-    "Cluster security: PSS, admission, RBAC, IAM least privilege & audit",
     "Node/container hardening & supply-chain provenance (images, SBOM, signing)",
     "AI/ML security: model weights & checkpoint hardening (registry, signing, bucket IAM, encryption)",
     "AI/ML security: securing inference/training deployments (admission, network policy, secrets, GPU isolation)",
