@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening — especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 14,
+  "next_lesson": 15,
   "completed": [
     {
       "n": 1,
@@ -69,10 +69,14 @@
       "n": 13,
       "title": "AI/ML security: model weights & checkpoint hardening (registry, signing, bucket IAM, encryption)",
       "date": "2026-09-21"
+    },
+    {
+      "n": 14,
+      "title": "AI/ML security: securing inference/training deployments (admission, network policy, secrets, GPU isolation)",
+      "date": "2026-09-22"
     }
   ],
   "upcoming": [
-    "AI/ML security: securing inference/training deployments (admission, network policy, secrets, GPU isolation)",
     "IaC: Terraform + Atlantis at fleet scale",
     "Workflow orchestration: Temporal & Argo Workflows",
     "Systems design tradeoffs for rapidly evolving platforms",

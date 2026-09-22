@@ -11,5 +11,6 @@
   "10-service-mesh-istio-linkerd-mtls": "10 — Service mesh / mTLS",
   "11-cluster-security-pss-admission-rbac": "11 — Cluster security / PSS / RBAC",
   "12-node-container-hardening-supply-chain": "12 — Node/container hardening / supply chain",
-  "13-ml-weights-checkpoint-hardening": "13 — ML weights / checkpoint hardening"
+  "13-ml-weights-checkpoint-hardening": "13 — ML weights / checkpoint hardening",
+  "14-ml-inference-training-deploy-hardening": "14 — ML inference/training deploy hardening"
 }
