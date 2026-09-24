@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening \u2014 especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 16,
+  "next_lesson": 17,
   "completed": [
     {
       "n": 1,
@@ -79,10 +79,14 @@
       "n": 15,
       "title": "IaC: Terraform + Atlantis at fleet scale",
       "date": "2026-09-23"
+    },
+    {
+      "n": 16,
+      "title": "Workflow orchestration: Temporal & Argo Workflows",
+      "date": "2026-09-24"
     }
   ],
   "upcoming": [
-    "Workflow orchestration: Temporal & Argo Workflows",
     "Systems design tradeoffs for rapidly evolving platforms",
     "AI/ML platform: GPU node pools, device plugins, MIG/time-slicing, SKU isolation",
     "AI/ML platform: GPU topology \u2014 NVLink/NVSwitch, multi-NIC RDMA, GPUDirect, NCCL",

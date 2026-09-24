@@ -13,5 +13,6 @@
   "12-node-container-hardening-supply-chain": "12 \u2014 Node/container hardening / supply chain",
   "13-ml-weights-checkpoint-hardening": "13 \u2014 ML weights / checkpoint hardening",
   "14-ml-inference-training-deploy-hardening": "14 \u2014 ML inference/training deploy hardening",
-  "15-terraform-atlantis-fleet-scale": "15 \u2014 Terraform / Atlantis at fleet scale"
+  "15-terraform-atlantis-fleet-scale": "15 \u2014 Terraform / Atlantis at fleet scale",
+  "16-temporal-argo-workflows": "16 \u2014 Temporal / Argo Workflows"
 }
