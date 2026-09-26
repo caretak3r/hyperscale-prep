@@ -15,5 +15,6 @@
   "14-ml-inference-training-deploy-hardening": "14 — ML inference/training deploy hardening",
   "15-terraform-atlantis-fleet-scale": "15 — Terraform / Atlantis at fleet scale",
   "16-temporal-argo-workflows": "16 — Temporal / Argo Workflows",
-  "17-systems-design-tradeoffs": "17 — Systems design tradeoffs"
+  "17-systems-design-tradeoffs": "17 — Systems design tradeoffs",
+  "18-gpu-node-pools-mig-timeslicing": "18 — GPU node pools / MIG / time-slicing"
 }

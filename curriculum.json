@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening — especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 18,
+  "next_lesson": 19,
   "completed": [
     {
       "n": 1,
@@ -89,10 +89,14 @@
       "n": 17,
       "title": "Systems design tradeoffs for rapidly evolving platforms",
       "date": "2026-09-25"
+    },
+    {
+      "n": 18,
+      "title": "AI/ML platform: GPU node pools, device plugins, MIG/time-slicing, SKU isolation",
+      "date": "2026-09-26"
     }
   ],
   "upcoming": [
-    "AI/ML platform: GPU node pools, device plugins, MIG/time-slicing, SKU isolation",
     "AI/ML platform: GPU topology — NVLink/NVSwitch, multi-NIC RDMA, GPUDirect, NCCL",
     "AI/ML platform: training/inference scheduling — gang, Kueue/Volcano, fair-share queues",
     "AI/ML platform: inference serving SLOs — TTFT/TPOT/goodput, continuous batching, KV cache as capacity",
