@@ -60,7 +60,7 @@ flowchart TB
   Wl --> Floor
 ```
 
-**Read it top-down:** **SKU pools** (labeled + tainted) feed the **NVIDIA GPU Operator** stack (driver, container toolkit, device plugin, GFD, DCGM). The plugin **advertises** `nvidia.com/gpu`, `nvidia.com/mig-*`, or `nvidia.com/gpu.shared`. You pick a **sharing mode** — exclusive (full GPU), MIG (HW memory/fault isolation), or time-slicing (SW replicas, no mem/fault isolation) — then the **scheduler** packs via nodeSelector/affinity + tolerations + RuntimeClass. Everything sits on a **security floor**: admission requiring SKU contracts, device-plugin RBAC, signed driver/workload images, NetworkPolicy on GPU namespaces, and WI/IRSA so weights never leak across tenants on shared nodes. Topology (NVLink/RDMA/NCCL) is Lesson 19 (upcoming) — preview only here.
+**Read it top-down:** **SKU pools** (labeled + tainted) feed the **NVIDIA GPU Operator** stack (driver, container toolkit, device plugin, GFD, DCGM). The plugin **advertises** `nvidia.com/gpu`, `nvidia.com/mig-*`, or `nvidia.com/gpu.shared`. You pick a **sharing mode** — exclusive (full GPU), MIG (HW memory/fault isolation), or time-slicing (SW replicas, no mem/fault isolation) — then the **scheduler** packs via nodeSelector/affinity + tolerations + RuntimeClass. Everything sits on a **security floor**: admission requiring SKU contracts, device-plugin RBAC, signed driver/workload images, NetworkPolicy on GPU namespaces, and WI/IRSA so weights never leak across tenants on shared nodes. Topology (NVLink/RDMA/NCCL) is [Lesson 19](/lessons/19-gpu-topology-nvlink-rdma-nccl) — preview only here.
 
 ## Idiosyncrasies / operator depth
 
@@ -387,11 +387,11 @@ spec:
 - **“Tenant NS stays PSS restricted — only gpu-operator may be privileged.”**
 - **“Per-pod WI/IRSA for weights; never a node-wide models:* role on shared pools.”**
 - **“Golden OS baseline; heterogeneity in labels and device plugins.”**
-- **“Next: topology — NVLink, RDMA, NCCL — packing without fabric is half a design.”**
+- **“Next: [Lesson 19](/lessons/19-gpu-topology-nvlink-rdma-nccl) — topology: NVLink, RDMA, NCCL — packing without fabric is half a design.”**
 
 ## How this maps to the JD
 
-Hyperscale + AI/ML platform JDs that mention **GPU fleets, inference/training, and 10K+ nodes** are asking whether you can **productize accelerators**: pools, device plugins, sharing modes, and security. This lesson connects [L1](/lessons/01-hyperscale-mental-model)/[L3](/lessons/03-cluster-provisioning-lifecycle)/[L4](/lessons/04-borg-mesos-orchestration) (cells, lifecycle, Borg packing instincts), [L11](/lessons/11-cluster-security-pss-admission-rbac)–[L14](/lessons/14-ml-inference-training-deploy-hardening) (admission, supply chain, weights, deploy isolation), [L15](/lessons/15-terraform-atlantis-fleet-scale) (pool IaC), and [L17](/lessons/17-systems-design-tradeoffs) (SKU vs golden image) into an **operator-ready GPU pool story**. Fuel: [wafer-ai/gpu-perf-engineering-resources](https://github.com/wafer-ai/gpu-perf-engineering-resources). **Next up — Lesson 19:** GPU topology (NVLink/NVSwitch, multi-NIC RDMA, GPUDirect, NCCL) so packing respects the fabric, not just the resource name.
+Hyperscale + AI/ML platform JDs that mention **GPU fleets, inference/training, and 10K+ nodes** are asking whether you can **productize accelerators**: pools, device plugins, sharing modes, and security. This lesson connects [L1](/lessons/01-hyperscale-mental-model)/[L3](/lessons/03-cluster-provisioning-lifecycle)/[L4](/lessons/04-borg-mesos-orchestration) (cells, lifecycle, Borg packing instincts), [L11](/lessons/11-cluster-security-pss-admission-rbac)–[L14](/lessons/14-ml-inference-training-deploy-hardening) (admission, supply chain, weights, deploy isolation), [L15](/lessons/15-terraform-atlantis-fleet-scale) (pool IaC), and [L17](/lessons/17-systems-design-tradeoffs) (SKU vs golden image) into an **operator-ready GPU pool story**. Fuel: [wafer-ai/gpu-perf-engineering-resources](https://github.com/wafer-ai/gpu-perf-engineering-resources). **Next up — [Lesson 19](/lessons/19-gpu-topology-nvlink-rdma-nccl):** GPU topology (NVLink/NVSwitch, multi-NIC RDMA, GPUDirect, NCCL) so packing respects the fabric, not just the resource name.
 
 ## Watch (talks & demos)
 
@@ -429,7 +429,7 @@ Control-plane cost of large GPU fleets, scheduler/apiserver pressure, KWOK simul
 - [Kubernetes Device Plugins](https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/) · [RuntimeClass](https://kubernetes.io/docs/concepts/containers/runtime-class/)
 - [wafer-ai/gpu-perf-engineering-resources](https://github.com/wafer-ai/gpu-perf-engineering-resources) — GPU fleets / topology / serving fuel
 - Prior: [17 — Systems design tradeoffs](/lessons/17-systems-design-tradeoffs) · [15 — Terraform / Atlantis](/lessons/15-terraform-atlantis-fleet-scale) · [14 — ML deploy hardening](/lessons/14-ml-inference-training-deploy-hardening) · [13 — ML weights](/lessons/13-ml-weights-checkpoint-hardening) · [12 — Node/container hardening](/lessons/12-node-container-hardening-supply-chain) · [11 — Cluster security](/lessons/11-cluster-security-pss-admission-rbac) · [04 — Borg/Mesos](/lessons/04-borg-mesos-orchestration) · [03 — Cluster provisioning](/lessons/03-cluster-provisioning-lifecycle) · [01 — Hyperscale mental model](/lessons/01-hyperscale-mental-model)
-- Next: **Lesson 19 — GPU topology (NVLink/NVSwitch, multi-NIC RDMA, GPUDirect, NCCL)**
+- Next: [Lesson 19 — GPU topology (NVLink/NVSwitch, multi-NIC RDMA, GPUDirect, NCCL)](/lessons/19-gpu-topology-nvlink-rdma-nccl)
 
 ## Quick self-check
 
