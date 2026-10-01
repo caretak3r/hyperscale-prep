@@ -1,7 +1,7 @@
 {
-  "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening — especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
+  "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening \u2014 especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 23,
+  "next_lesson": 24,
   "completed": [
     {
       "n": 1,
@@ -97,32 +97,36 @@
     },
     {
       "n": 19,
-      "title": "AI/ML platform: GPU topology — NVLink/NVSwitch, multi-NIC RDMA, GPUDirect, NCCL",
+      "title": "AI/ML platform: GPU topology \u2014 NVLink/NVSwitch, multi-NIC RDMA, GPUDirect, NCCL",
       "date": "2026-09-27"
     },
     {
       "n": 20,
-      "title": "AI/ML platform: training/inference scheduling — gang, Kueue/Volcano, fair-share queues",
+      "title": "AI/ML platform: training/inference scheduling \u2014 gang, Kueue/Volcano, fair-share queues",
       "date": "2026-09-28"
     },
     {
       "n": 21,
-      "title": "AI/ML platform: inference serving SLOs — TTFT/TPOT/goodput, continuous batching, KV cache as capacity",
+      "title": "AI/ML platform: inference serving SLOs \u2014 TTFT/TPOT/goodput, continuous batching, KV cache as capacity",
       "date": "2026-09-29"
     },
     {
       "n": 22,
       "title": "AI/ML platform: prefill/decode disaggregation & MoE serving topology on the fleet",
       "date": "2026-09-30"
+    },
+    {
+      "n": 23,
+      "title": "AI/ML platform: GPU observability \u2014 DCGM, NCCL tests, roofline capacity planning",
+      "date": "2026-10-01"
     }
   ],
   "upcoming": [
-    "AI/ML platform: GPU observability — DCGM, NCCL tests, roofline capacity planning",
     "AI/ML platform: multi-cluster inference routing & capacity planning across cells"
   ],
   "site_url": "https://caretak3r.github.io/hyperscale-prep/",
   "sources": {
     "wafer_gpu_perf": "https://github.com/wafer-ai/gpu-perf-engineering-resources",
-    "note": "Use as curriculum fuel for AI/ML platform lessons — operator/platform depth (SKU pools, topology, schedulers, serving SLOs, NCCL/RDMA) plus security/model-weight hardening (private registries, signing/provenance, bucket IAM, encrypted checkpoints, secured inference deployments). Not a CUDA-kernel course."
+    "note": "Use as curriculum fuel for AI/ML platform lessons \u2014 operator/platform depth (SKU pools, topology, schedulers, serving SLOs, NCCL/RDMA) plus security/model-weight hardening (private registries, signing/provenance, bucket IAM, encrypted checkpoints, secured inference deployments). Not a CUDA-kernel course."
   }
 }
