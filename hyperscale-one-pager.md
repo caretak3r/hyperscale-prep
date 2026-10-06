@@ -384,3 +384,9 @@ If someone asks: *“Our apiserver p99 spiked after we onboarded 40 operators �
 ---
 
 *Next up (Lesson 3): Cluster provisioning & lifecycle systems.*
+
+---
+
+## Later lessons — quick bullets (full text on the site)
+
+- **Lesson 28 (2026-10-06) — Inference autoscaling & scale-to-zero:** scale LLM serving on queue depth (`vllm:num_requests_waiting` / EPP flow-control queue), KV pressure (`vllm:kv_cache_usage_perc`), and TTFT burn, not GPU util. KEDA owns 0↔1 and its generated HPA owns 1↔N. Set the scale-up stabilization window to roughly the measured cold start. Wake from zero needs a request-holding signal (activator / interceptor / EPP). Buy warm capacity per SLO tier (hot floors, placeholder-warmed nodes, cached weights, zero). Drain streams in `preStop` because PDBs don't cover HPA scale-in. Cap scalers in five places and authenticate the wake path. → https://caretak3r.github.io/hyperscale-prep/lessons/28-inference-autoscaling-scale-to-zero

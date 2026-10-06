@@ -25,5 +25,6 @@
   "24-multi-cluster-inference-routing-capacity": "24 — Multi-cluster inference routing / capacity",
   "25-multi-tenant-gpu-isolation-quota": "25 — Multi-tenant GPU isolation / quota",
   "26-gpu-cost-attribution-reclaim-spot": "26 — GPU cost attribution / reclaim / spot",
-  "27-gpu-supply-chain-weight-registry-hydrate": "27 — GPU supply chain / weight registries / hydrate"
+  "27-gpu-supply-chain-weight-registry-hydrate": "27 — GPU supply chain / weight registries / hydrate",
+  "28-inference-autoscaling-scale-to-zero": "28 — Inference autoscaling / scale-to-zero"
 }

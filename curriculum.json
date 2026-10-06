@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening — especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 28,
+  "next_lesson": 29,
   "completed": [
     {
       "n": 1,
@@ -139,10 +139,15 @@
       "n": 27,
       "title": "AI/ML platform: GPU supply chain — weight registries, checkpoint lifecycle & cold-start hydrate economics",
       "date": "2026-10-05"
+    },
+    {
+      "n": 28,
+      "title": "AI/ML platform: inference autoscaling & scale-to-zero — token-metric HPA/KEDA, warm pools & GPU node provisioning latency",
+      "date": "2026-10-06"
     }
   ],
   "upcoming": [
-    "AI/ML platform: inference autoscaling & scale-to-zero — token-metric HPA/KEDA, warm pools & GPU node provisioning latency"
+    "AI/ML platform: training job reliability at scale — checkpoint/restart, elastic training, straggler & failed-node detection"
   ],
   "site_url": "https://caretak3r.github.io/hyperscale-prep/",
   "sources": {
