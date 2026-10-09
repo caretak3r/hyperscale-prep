@@ -28,5 +28,6 @@
   "27-gpu-supply-chain-weight-registry-hydrate": "27 — GPU supply chain / weight registries / hydrate",
   "28-inference-autoscaling-scale-to-zero": "28 — Inference autoscaling / scale-to-zero",
   "29-training-reliability-checkpoint-elastic": "29 — Training reliability / checkpoint / elastic",
-  "30-training-data-loading-storage-io": "30 — Training data loading / storage / I/O stalls"
+  "30-training-data-loading-storage-io": "30 — Training data loading / storage / I/O stalls",
+  "31-evaluation-release-gating-canary-weights": "31 — Evaluation / release gating / canary weights"
 }
