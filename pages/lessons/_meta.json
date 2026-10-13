@@ -32,5 +32,6 @@
   "31-evaluation-release-gating-canary-weights": "31 — Evaluation / release gating / canary weights",
   "32-offline-online-eval-consistency-llm-judge": "32 — Offline/online eval consistency / LLM-as-judge",
   "33-prompt-tool-catalog-versioning-serving-config": "33 — Prompt/tool catalog versioning / serving config",
-  "34-agent-tool-sandboxing-egress-policy": "34 — Agent/tool sandboxing / side-effect controls / egress"
+  "34-agent-tool-sandboxing-egress-policy": "34 — Agent/tool sandboxing / side-effect controls / egress",
+  "35-fleet-incident-response-gpu-inference-agent-runbooks": "35 — Fleet incident response / on-call runbooks (GPU, inference, agents)"
 }

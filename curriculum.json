@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening — especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 35,
+  "next_lesson": 36,
   "completed": [
     {
       "n": 1,
@@ -174,10 +174,15 @@
       "n": 34,
       "title": "AI/ML platform: agent/tool sandboxing, side-effect controls & egress policy at fleet scale",
       "date": "2026-10-12"
+    },
+    {
+      "n": 35,
+      "title": "AI/ML platform: fleet-wide incident response & on-call runbooks for GPU, inference and agent workloads",
+      "date": "2026-10-13"
     }
   ],
   "upcoming": [
-    "AI/ML platform: fleet-wide incident response & on-call runbooks for GPU, inference and agent workloads"
+    "AI/ML platform: multi-region DR & failover for inference — traffic shift, cross-region weight hydrate & RTO/RPO for GPU cells"
   ],
   "site_url": "https://caretak3r.github.io/hyperscale-prep/",
   "sources": {
