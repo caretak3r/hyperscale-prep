@@ -34,5 +34,6 @@
   "33-prompt-tool-catalog-versioning-serving-config": "33 \u2014 Prompt/tool catalog versioning / serving config",
   "34-agent-tool-sandboxing-egress-policy": "34 \u2014 Agent/tool sandboxing / side-effect controls / egress",
   "35-fleet-incident-response-gpu-inference-agent-runbooks": "35 \u2014 Fleet incident response / on-call runbooks (GPU, inference, agents)",
-  "36-multi-region-dr-failover-inference": "36 \u2014 Multi-region DR / failover for inference (traffic shift, weight hydrate, RTO/RPO)"
+  "36-multi-region-dr-failover-inference": "36 \u2014 Multi-region DR / failover for inference (traffic shift, weight hydrate, RTO/RPO)",
+  "37-chaos-engineering-dr-game-days-gpu-inference": "37 \u2014 Chaos engineering / DR game days (region blackhole, hydrate storms, failback)"
 }
