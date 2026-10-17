@@ -36,5 +36,6 @@
   "35-fleet-incident-response-gpu-inference-agent-runbooks": "35 \u2014 Fleet incident response / on-call runbooks (GPU, inference, agents)",
   "36-multi-region-dr-failover-inference": "36 \u2014 Multi-region DR / failover for inference (traffic shift, weight hydrate, RTO/RPO)",
   "37-chaos-engineering-dr-game-days-gpu-inference": "37 \u2014 Chaos engineering / DR game days (region blackhole, hydrate storms, failback)",
-  "38-gpu-fleet-capacity-planning-procurement": "38 \u2014 GPU fleet capacity planning / procurement (forecast, reservation mix, lead time)"
+  "38-gpu-fleet-capacity-planning-procurement": "38 \u2014 GPU fleet capacity planning / procurement (forecast, reservation mix, lead time)",
+  "39-gpu-fleet-lifecycle-acceptance-burn-in-rma": "39 \u2014 GPU fleet lifecycle (acceptance, burn-in, FW/driver rollouts, RMA)"
 }
