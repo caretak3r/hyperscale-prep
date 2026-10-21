@@ -39,5 +39,6 @@
   "38-gpu-fleet-capacity-planning-procurement": "38 \u2014 GPU fleet capacity planning / procurement (forecast, reservation mix, lead time)",
   "39-gpu-fleet-lifecycle-acceptance-burn-in-rma": "39 \u2014 GPU fleet lifecycle (acceptance, burn-in, FW/driver rollouts, RMA)",
   "40-infiniband-roce-fabric-operations": "40 \u2014 InfiniBand / RoCE fabric ops (SM, congestion control, link flaps, health)",
-  "41-power-cooling-facility-constraints-gpu-fleets": "41 \u2014 Power, cooling & facility constraints (rack budgets, liquid cooling, capping, throttling)"
+  "41-power-cooling-facility-constraints-gpu-fleets": "41 \u2014 Power, cooling & facility constraints (rack budgets, liquid cooling, capping, throttling)",
+  "42-node-os-kernel-management-gpu-fleets": "42 \u2014 Node OS & kernel management (immutable images, driver ABI, livepatch)"
 }

@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening \u2014 especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 42,
+  "next_lesson": 43,
   "completed": [
     {
       "n": 1,
@@ -209,10 +209,15 @@
       "n": 41,
       "title": "AI/ML platform: power, cooling & facility constraints for GPU fleets \u2014 rack power budgets, liquid cooling failures, power capping & thermal throttling",
       "date": "2026-10-20"
+    },
+    {
+      "n": 42,
+      "title": "AI/ML platform: fleet-scale node OS & kernel management \u2014 immutable images, kernel/driver ABI coupling & live patching across 10K+ GPU nodes",
+      "date": "2026-10-21"
     }
   ],
   "upcoming": [
-    "AI/ML platform: fleet-scale node OS & kernel management \u2014 immutable images, kernel/driver ABI coupling & live patching across 10K+ GPU nodes"
+    "AI/ML platform: GPU node bootstrap & bare-metal provisioning at scale \u2014 PXE/iPXE, Redfish automation, cluster join & zero-touch onboarding of new racks"
   ],
   "site_url": "https://caretak3r.github.io/hyperscale-prep/",
   "sources": {
