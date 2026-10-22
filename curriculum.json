@@ -1,7 +1,7 @@
 {
-  "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening \u2014 especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
+  "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening — especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 43,
+  "next_lesson": 44,
   "completed": [
     {
       "n": 1,
@@ -97,17 +97,17 @@
     },
     {
       "n": 19,
-      "title": "AI/ML platform: GPU topology \u2014 NVLink/NVSwitch, multi-NIC RDMA, GPUDirect, NCCL",
+      "title": "AI/ML platform: GPU topology — NVLink/NVSwitch, multi-NIC RDMA, GPUDirect, NCCL",
       "date": "2026-09-27"
     },
     {
       "n": 20,
-      "title": "AI/ML platform: training/inference scheduling \u2014 gang, Kueue/Volcano, fair-share queues",
+      "title": "AI/ML platform: training/inference scheduling — gang, Kueue/Volcano, fair-share queues",
       "date": "2026-09-28"
     },
     {
       "n": 21,
-      "title": "AI/ML platform: inference serving SLOs \u2014 TTFT/TPOT/goodput, continuous batching, KV cache as capacity",
+      "title": "AI/ML platform: inference serving SLOs — TTFT/TPOT/goodput, continuous batching, KV cache as capacity",
       "date": "2026-09-29"
     },
     {
@@ -117,7 +117,7 @@
     },
     {
       "n": 23,
-      "title": "AI/ML platform: GPU observability \u2014 DCGM, NCCL tests, roofline capacity planning",
+      "title": "AI/ML platform: GPU observability — DCGM, NCCL tests, roofline capacity planning",
       "date": "2026-10-01"
     },
     {
@@ -137,27 +137,27 @@
     },
     {
       "n": 27,
-      "title": "AI/ML platform: GPU supply chain \u2014 weight registries, checkpoint lifecycle & cold-start hydrate economics",
+      "title": "AI/ML platform: GPU supply chain — weight registries, checkpoint lifecycle & cold-start hydrate economics",
       "date": "2026-10-05"
     },
     {
       "n": 28,
-      "title": "AI/ML platform: inference autoscaling & scale-to-zero \u2014 token-metric HPA/KEDA, warm pools & GPU node provisioning latency",
+      "title": "AI/ML platform: inference autoscaling & scale-to-zero — token-metric HPA/KEDA, warm pools & GPU node provisioning latency",
       "date": "2026-10-06"
     },
     {
       "n": 29,
-      "title": "AI/ML platform: training job reliability at scale \u2014 checkpoint/restart, elastic training, straggler & failed-node detection",
+      "title": "AI/ML platform: training job reliability at scale — checkpoint/restart, elastic training, straggler & failed-node detection",
       "date": "2026-10-07"
     },
     {
       "n": 30,
-      "title": "AI/ML platform: distributed training storage & data loading at scale \u2014 dataset streaming, caching tiers & I/O stalls",
+      "title": "AI/ML platform: distributed training storage & data loading at scale — dataset streaming, caching tiers & I/O stalls",
       "date": "2026-10-08"
     },
     {
       "n": 31,
-      "title": "AI/ML platform: evaluation & release gating at fleet scale \u2014 eval clusters, regression gates & canary rollouts of new weights",
+      "title": "AI/ML platform: evaluation & release gating at fleet scale — eval clusters, regression gates & canary rollouts of new weights",
       "date": "2026-10-09"
     },
     {
@@ -182,46 +182,51 @@
     },
     {
       "n": 36,
-      "title": "AI/ML platform: multi-region DR & failover for inference \u2014 traffic shift, cross-region weight hydrate & RTO/RPO for GPU cells",
+      "title": "AI/ML platform: multi-region DR & failover for inference — traffic shift, cross-region weight hydrate & RTO/RPO for GPU cells",
       "date": "2026-10-14"
     },
     {
       "n": 37,
-      "title": "AI/ML platform: chaos engineering & DR game days for GPU inference fleets \u2014 region blackhole drills, hydrate storms & controlled failback",
+      "title": "AI/ML platform: chaos engineering & DR game days for GPU inference fleets — region blackhole drills, hydrate storms & controlled failback",
       "date": "2026-10-15"
     },
     {
       "n": 38,
-      "title": "AI/ML platform: GPU fleet capacity planning & procurement \u2014 demand forecasting, reservation mix & lead-time risk for inference and training",
+      "title": "AI/ML platform: GPU fleet capacity planning & procurement — demand forecasting, reservation mix & lead-time risk for inference and training",
       "date": "2026-10-16"
     },
     {
       "n": 39,
-      "title": "AI/ML platform: GPU fleet lifecycle \u2014 node acceptance, burn-in, firmware/driver rollouts & RMA at 10K+ GPUs",
+      "title": "AI/ML platform: GPU fleet lifecycle — node acceptance, burn-in, firmware/driver rollouts & RMA at 10K+ GPUs",
       "date": "2026-10-17"
     },
     {
       "n": 40,
-      "title": "AI/ML platform: InfiniBand / RoCE fabric operations at scale \u2014 subnet management, congestion control, link flaps & fabric health for 10K+ GPU clusters",
+      "title": "AI/ML platform: InfiniBand / RoCE fabric operations at scale — subnet management, congestion control, link flaps & fabric health for 10K+ GPU clusters",
       "date": "2026-10-18"
     },
     {
       "n": 41,
-      "title": "AI/ML platform: power, cooling & facility constraints for GPU fleets \u2014 rack power budgets, liquid cooling failures, power capping & thermal throttling",
+      "title": "AI/ML platform: power, cooling & facility constraints for GPU fleets — rack power budgets, liquid cooling failures, power capping & thermal throttling",
       "date": "2026-10-20"
     },
     {
       "n": 42,
-      "title": "AI/ML platform: fleet-scale node OS & kernel management \u2014 immutable images, kernel/driver ABI coupling & live patching across 10K+ GPU nodes",
+      "title": "AI/ML platform: fleet-scale node OS & kernel management — immutable images, kernel/driver ABI coupling & live patching across 10K+ GPU nodes",
       "date": "2026-10-21"
+    },
+    {
+      "n": 43,
+      "title": "AI/ML platform: GPU node bootstrap & bare-metal provisioning at scale — PXE/iPXE, Redfish automation, cluster join & zero-touch onboarding of new racks",
+      "date": "2026-10-22"
     }
   ],
   "upcoming": [
-    "AI/ML platform: GPU node bootstrap & bare-metal provisioning at scale \u2014 PXE/iPXE, Redfish automation, cluster join & zero-touch onboarding of new racks"
+    "AI/ML platform: GPU cluster control-plane scaling — API server, etcd and controller load from 10K+ GPU nodes, DaemonSet fan-out & watch storms"
   ],
   "site_url": "https://caretak3r.github.io/hyperscale-prep/",
   "sources": {
     "wafer_gpu_perf": "https://github.com/wafer-ai/gpu-perf-engineering-resources",
-    "note": "Use as curriculum fuel for AI/ML platform lessons \u2014 operator/platform depth (SKU pools, topology, schedulers, serving SLOs, NCCL/RDMA) plus security/model-weight hardening (private registries, signing/provenance, bucket IAM, encrypted checkpoints, secured inference deployments). Not a CUDA-kernel course."
+    "note": "Use as curriculum fuel for AI/ML platform lessons — operator/platform depth (SKU pools, topology, schedulers, serving SLOs, NCCL/RDMA) plus security/model-weight hardening (private registries, signing/provenance, bucket IAM, encrypted checkpoints, secured inference deployments). Not a CUDA-kernel course."
   }
 }
