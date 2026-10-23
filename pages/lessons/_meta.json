@@ -41,5 +41,6 @@
   "40-infiniband-roce-fabric-operations": "40 — InfiniBand / RoCE fabric ops (SM, congestion control, link flaps, health)",
   "41-power-cooling-facility-constraints-gpu-fleets": "41 — Power, cooling & facility constraints (rack budgets, liquid cooling, capping, throttling)",
   "42-node-os-kernel-management-gpu-fleets": "42 — Node OS & kernel management (immutable images, driver ABI, livepatch)",
-  "43-gpu-node-bootstrap-bare-metal-provisioning": "43 — GPU node bootstrap & bare-metal provisioning (PXE/iPXE, Redfish, join)"
+  "43-gpu-node-bootstrap-bare-metal-provisioning": "43 — GPU node bootstrap & bare-metal provisioning (PXE/iPXE, Redfish, join)",
+  "44-gpu-cluster-control-plane-scaling": "44 — GPU cluster control-plane scaling (APF, watch cache, etcd, watch storms)"
 }
