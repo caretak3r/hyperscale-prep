@@ -43,5 +43,6 @@
   "42-node-os-kernel-management-gpu-fleets": "42 — Node OS & kernel management (immutable images, driver ABI, livepatch)",
   "43-gpu-node-bootstrap-bare-metal-provisioning": "43 — GPU node bootstrap & bare-metal provisioning (PXE/iPXE, Redfish, join)",
   "44-gpu-cluster-control-plane-scaling": "44 — GPU cluster control-plane scaling (APF, watch cache, etcd, watch storms)",
-  "45-fleet-kubernetes-upgrades-gpu-clusters": "45 — Fleet-wide Kubernetes upgrades for GPU clusters (skew, waves, deprecations, drains)"
+  "45-fleet-kubernetes-upgrades-gpu-clusters": "45 — Fleet-wide Kubernetes upgrades for GPU clusters (skew, waves, deprecations, drains)",
+  "46-gpu-cluster-networking-fleet-scale": "46 — GPU cluster networking at fleet scale (CNI, multi-NIC/DRA, IPAM, isolation)"
 }

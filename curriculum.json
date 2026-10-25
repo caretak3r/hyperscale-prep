@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening — especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 46,
+  "next_lesson": 47,
   "completed": [
     {
       "n": 1,
@@ -229,10 +229,15 @@
       "n": 45,
       "title": "AI/ML platform: fleet-wide Kubernetes upgrades for GPU clusters — version skew, control-plane and node-pool upgrade waves, API deprecations & training-job-safe drains",
       "date": "2026-10-24"
+    },
+    {
+      "n": 46,
+      "title": "AI/ML platform: GPU cluster networking at fleet scale — CNI choices for GPU nodes, multi-NIC (Multus/DRA network), IP address management for 10K+ nodes & east-west isolation for training and inference",
+      "date": "2026-10-25"
     }
   ],
   "upcoming": [
-    "AI/ML platform: GPU cluster networking at fleet scale — CNI choices for GPU nodes, multi-NIC (Multus/DRA network), IP address management for 10K+ nodes & east-west isolation for training and inference"
+    "AI/ML platform: DNS, service discovery & east-west load balancing at fleet scale — CoreDNS and NodeLocal DNSCache at 10K+ nodes, EndpointSlice fan-out, conntrack limits & inference gateway traffic"
   ],
   "site_url": "https://caretak3r.github.io/hyperscale-prep/",
   "sources": {
