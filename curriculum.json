@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening — especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 48,
+  "next_lesson": 49,
   "completed": [
     {
       "n": 1,
@@ -239,10 +239,15 @@
       "n": 47,
       "title": "AI/ML platform: DNS, service discovery & east-west load balancing at fleet scale — CoreDNS and NodeLocal DNSCache at 10K+ nodes, EndpointSlice fan-out, conntrack limits & inference gateway traffic",
       "date": "2026-10-26"
+    },
+    {
+      "n": 48,
+      "title": "AI/ML platform: workload identity, secrets & PKI at fleet scale — SPIFFE/SPIRE, cloud workload identity federation, certificate rotation across 10K+ nodes & scoped access to weight buckets",
+      "date": "2026-10-27"
     }
   ],
   "upcoming": [
-    "AI/ML platform: workload identity, secrets & PKI at fleet scale — SPIFFE/SPIRE, cloud workload identity federation, certificate rotation across 10K+ nodes & scoped access to weight buckets"
+    "AI/ML platform: fleet observability pipelines at scale — metrics, logs & traces from 10K+ GPU nodes, Prometheus sharding vs Thanos/Mimir, cardinality budgets for DCGM & inference metrics, and telemetry cost control"
   ],
   "site_url": "https://caretak3r.github.io/hyperscale-prep/",
   "sources": {

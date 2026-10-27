@@ -45,5 +45,6 @@
   "44-gpu-cluster-control-plane-scaling": "44 — GPU cluster control-plane scaling (APF, watch cache, etcd, watch storms)",
   "45-fleet-kubernetes-upgrades-gpu-clusters": "45 — Fleet-wide Kubernetes upgrades for GPU clusters (skew, waves, deprecations, drains)",
   "46-gpu-cluster-networking-fleet-scale": "46 — GPU cluster networking at fleet scale (CNI, multi-NIC/DRA, IPAM, isolation)",
-  "47-dns-service-discovery-east-west-lb": "47 — DNS, service discovery & east-west LB (CoreDNS, NodeLocal, EndpointSlices, conntrack, inference gateways)"
+  "47-dns-service-discovery-east-west-lb": "47 — DNS, service discovery & east-west LB (CoreDNS, NodeLocal, EndpointSlices, conntrack, inference gateways)",
+  "48-workload-identity-secrets-pki-fleet-scale": "48 — Workload identity, secrets & PKI (SPIFFE/SPIRE, cloud WIF, cert rotation, weight-bucket scoping)"
 }
