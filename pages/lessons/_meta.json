@@ -46,5 +46,6 @@
   "45-fleet-kubernetes-upgrades-gpu-clusters": "45 — Fleet-wide Kubernetes upgrades for GPU clusters (skew, waves, deprecations, drains)",
   "46-gpu-cluster-networking-fleet-scale": "46 — GPU cluster networking at fleet scale (CNI, multi-NIC/DRA, IPAM, isolation)",
   "47-dns-service-discovery-east-west-lb": "47 — DNS, service discovery & east-west LB (CoreDNS, NodeLocal, EndpointSlices, conntrack, inference gateways)",
-  "48-workload-identity-secrets-pki-fleet-scale": "48 — Workload identity, secrets & PKI (SPIFFE/SPIRE, cloud WIF, cert rotation, weight-bucket scoping)"
+  "48-workload-identity-secrets-pki-fleet-scale": "48 — Workload identity, secrets & PKI (SPIFFE/SPIRE, cloud WIF, cert rotation, weight-bucket scoping)",
+  "49-fleet-observability-pipelines-scale": "49 — Fleet observability pipelines (Prometheus sharding, Thanos/Mimir, cardinality budgets, telemetry cost)"
 }
