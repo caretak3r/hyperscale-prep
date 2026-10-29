@@ -257,11 +257,25 @@
     }
   ],
   "upcoming": [
-    "AI/ML platform: GitOps & progressive delivery across 100+ clusters — Argo CD ApplicationSets and Flux at fleet scale, sync waves and rollout rings, drift detection, SLO-gated promotion and securing the GitOps control plane"
+    "AI/ML platform: GitOps & progressive delivery across 100+ clusters — Argo CD ApplicationSets and Flux at fleet scale, sync waves and rollout rings, drift detection, SLO-gated promotion and securing the GitOps control plane",
+    "Agent runtime infra: MCP & A2A at fleet scale — tool and agent gateways (AgentGateway, IBM ContextForge, ToolHive), OAuth 2.1 auth and token exchange, tool registries, and the MCP threat model (tool poisoning, rug pulls, confused deputy, token passthrough)",
+    "Agent runtime infra: agent memory & context infrastructure — vector and hybrid stores (Milvus, seekdb), memory layers (mem0, Cognee, Supermemory, Hindsight, OpenViking), RAGFlow ingestion, context compression (Headroom), tenant isolation and memory poisoning",
+    "Agent runtime infra: sandboxed agent execution at scale — Kubernetes Agent Sandbox (Sandbox, SandboxTemplate, SandboxClaim, warm pools), gVisor vs Kata vs Firecracker, Daytona/OpenSandbox/E2B-style sandbox APIs, Coder workspaces, snapshot/resume and cold-start economics",
+    "Agent runtime infra: browser & computer-use agent infrastructure — headless browser fleets (Browser Use, Agent Browser, Firecrawl), CUA desktops and VMs, session and credential vaulting, egress proxies, anti-SSRF and indirect prompt injection from the web",
+    "Agent runtime infra: agent observability & evaluation — OpenTelemetry GenAI semantic conventions, trace pipelines (Langfuse, Arize Phoenix, Opik), trace sampling and cost per agent task, promptfoo red teaming in CI, and keeping prompts and PII out of the wrong stores",
+    "Agent runtime infra: agent UI protocols & durable agent execution — AG-UI event streams and A2UI declarative UI, SSE/WebSocket fan-out at scale, human-in-the-loop interrupts, durable runs with checkpointed state and resume after node loss",
+    "Agent runtime infra: agent identity & delegated authorization — per-agent workload identity, OAuth on-behalf-of and token exchange, short-lived scoped tool credentials, step-up approvals for risky actions, and fleet-wide agent kill switches",
+    "Agent runtime infra: hosting coding agents for an org — Claude Code, Codex, OpenHands, Goose and Gemini CLI fleets, harnesses and Agent Skills distribution, per-repo credential scoping, model-gateway budgets and auditing agent-authored changes",
+    "Agent runtime infra: multi-agent orchestration & workflow builders as platform services — multi-tenant Dify, n8n, Langflow and Flowise, Mastra/Deer Flow-style orchestration, plugin and node supply-chain risk, secrets in workflows, and blast-radius limits for agent swarms",
+    "Agent runtime infra capstone: designing an agent platform for 10K concurrent agents — gateway, memory, sandbox, browser and observability layers on Kubernetes/GPU cells, capacity math, SLOs, cost per agent task and the security review"
   ],
   "site_url": "https://caretak3r.github.io/hyperscale-prep/",
   "sources": {
     "wafer_gpu_perf": "https://github.com/wafer-ai/gpu-perf-engineering-resources",
-    "note": "Use as curriculum fuel for AI/ML platform lessons — operator/platform depth (SKU pools, topology, schedulers, serving SLOs, NCCL/RDMA) plus security/model-weight hardening (private registries, signing/provenance, bucket IAM, encrypted checkpoints, secured inference deployments). Not a CUDA-kernel course."
+    "note": "Use as curriculum fuel for AI/ML platform lessons — operator/platform depth (SKU pools, topology, schedulers, serving SLOs, NCCL/RDMA) plus security/model-weight hardening (private registries, signing/provenance, bucket IAM, encrypted checkpoints, secured inference deployments). Not a CUDA-kernel course.",
+    "agent_infra_landscape": {
+      "image": "public/agent-infra-landscape-2026.png",
+      "note": "Agent runtime infrastructure track (Lessons 52-61), added at Rohit's request from the 'Agent Infra Landscape 2026' map. Focus on the bottom 'Agent Runtime Infra' layer: memory/knowledge/context (OpenViking, Milvus, RAGFlow, Cognee, Hindsight, Headroom, mem0, Supermemory, seekdb), protocols/interop (A2UI, IBM MCP ContextForge, AgentGateway, ToolHive, MCP, AG-UI, A2A, Agent Skills), tools/web/computer use (Lark CLI, CUA, Agent Browser, Firecrawl, Browser Use, page-agent), dev sandboxes (Coder, kubernetes-sigs Agent Sandbox, OpenSandbox, Daytona), observability/eval (Langfuse, Opik, Arize Phoenix, promptfoo). Write from a platform/SRE/security view of running these at fleet scale on Kubernetes and GPU cells. Build on Lessons 30-34 (data, eval, LLM judge, prompt/tool catalog, agent sandboxing/egress) and 48 (workload identity) instead of repeating them. Keep all house requirements; the Security & hardening section adapts weights/checkpoints/registries/signing/bucket IAM/secure deployments to agents: tool credentials, prompt injection, egress, memory poisoning, signed MCP servers/skills/sandbox images."
+    }
   }
 }

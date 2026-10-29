@@ -16,6 +16,27 @@ Maintained as **daily operator-deep lessons** plus diagrams: written like an eng
 
 <a href="/hyperscale-prep/llm-practice-problems.pdf" target="_blank" rel="noopener">📄 Open the practice problems (PDF)</a>
 
+## Agent infrastructure track
+
+The next stretch of lessons goes one layer up, into the **agent runtime infrastructure** from the *Agent Infra Landscape 2026* map: memory and context stores, MCP/A2A gateways, sandboxes, browser and computer-use fleets, and agent observability. Same house rules as every other lesson (operator depth, Security & hardening, diagrams, failures & fixes), written from the view of the team that has to run these for thousands of agents on Kubernetes and GPU cells.
+
+<a href="/hyperscale-prep/agent-infra-landscape-2026.png" target="_blank" rel="noopener"><img src="/hyperscale-prep/agent-infra-landscape-2026.png" alt="Agent Infra Landscape 2026: Agent Application, Agent Framework and Agent Runtime Infra layers (memory and context, protocols and interoperability, tools and computer use, development sandboxes, observability and evaluation)" /></a>
+
+Upcoming, after Lesson 51 (GitOps & progressive delivery across 100+ clusters):
+
+| # | Lesson |
+|---|---|
+| 52 | MCP & A2A at fleet scale: tool and agent gateways (AgentGateway, IBM ContextForge, ToolHive), auth, tool registries and the MCP threat model |
+| 53 | Agent memory & context infrastructure: Milvus, seekdb, mem0, Cognee, Supermemory, Hindsight, OpenViking, RAGFlow, Headroom, tenant isolation and memory poisoning |
+| 54 | Sandboxed agent execution at scale: Kubernetes Agent Sandbox, gVisor/Kata/Firecracker, Daytona, OpenSandbox, Coder, warm pools and cold starts |
+| 55 | Browser & computer-use agent infrastructure: Browser Use, Agent Browser, Firecrawl, CUA, egress, anti-SSRF and prompt injection from the web |
+| 56 | Agent observability & evaluation: OpenTelemetry GenAI conventions, Langfuse, Arize Phoenix, Opik, promptfoo red teaming, cost per task |
+| 57 | Agent UI protocols & durable execution: AG-UI, A2UI, streaming fan-out, human-in-the-loop interrupts, resume after node loss |
+| 58 | Agent identity & delegated authorization: per-agent identity, on-behalf-of token exchange, scoped tool credentials, kill switches |
+| 59 | Hosting coding agents for an org: Claude Code, Codex, OpenHands, Goose, Gemini CLI, Agent Skills distribution and credential scoping |
+| 60 | Multi-agent orchestration & workflow builders as platform services: Dify, n8n, Langflow, Flowise, tenancy and supply-chain risk |
+| 61 | Capstone: designing an agent platform for 10K concurrent agents |
+
 ---
 
 ## What this JD is really asking
