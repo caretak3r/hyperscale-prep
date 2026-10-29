@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening — especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 50,
+  "next_lesson": 51,
   "completed": [
     {
       "n": 1,
@@ -249,10 +249,15 @@
       "n": 49,
       "title": "AI/ML platform: fleet observability pipelines at scale — metrics, logs & traces from 10K+ GPU nodes, Prometheus sharding vs Thanos/Mimir, cardinality budgets for DCGM & inference metrics, and telemetry cost control",
       "date": "2026-10-28"
+    },
+    {
+      "n": 50,
+      "title": "AI/ML platform: SLOs, error budgets & alerting design at fleet scale — multi-window burn-rate alerts for inference endpoints, alert routing across 100+ clusters, paging hygiene and GPU-fleet health signals that actually page",
+      "date": "2026-10-29"
     }
   ],
   "upcoming": [
-    "AI/ML platform: SLOs, error budgets & alerting design at fleet scale — multi-window burn-rate alerts for inference endpoints, alert routing across 100+ clusters, paging hygiene and GPU-fleet health signals that actually page"
+    "AI/ML platform: GitOps & progressive delivery across 100+ clusters — Argo CD ApplicationSets and Flux at fleet scale, sync waves and rollout rings, drift detection, SLO-gated promotion and securing the GitOps control plane"
   ],
   "site_url": "https://caretak3r.github.io/hyperscale-prep/",
   "sources": {
