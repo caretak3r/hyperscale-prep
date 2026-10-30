@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening — especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 51,
+  "next_lesson": 52,
   "completed": [
     {
       "n": 1,
@@ -254,10 +254,14 @@
       "n": 50,
       "title": "AI/ML platform: SLOs, error budgets & alerting design at fleet scale — multi-window burn-rate alerts for inference endpoints, alert routing across 100+ clusters, paging hygiene and GPU-fleet health signals that actually page",
       "date": "2026-10-29"
+    },
+    {
+      "n": 51,
+      "title": "AI/ML platform: GitOps & progressive delivery across 100+ clusters — Argo CD ApplicationSets and Flux at fleet scale, sync waves and rollout rings, drift detection, SLO-gated promotion and securing the GitOps control plane",
+      "date": "2026-10-30"
     }
   ],
   "upcoming": [
-    "AI/ML platform: GitOps & progressive delivery across 100+ clusters — Argo CD ApplicationSets and Flux at fleet scale, sync waves and rollout rings, drift detection, SLO-gated promotion and securing the GitOps control plane",
     "Agent runtime infra: MCP & A2A at fleet scale — tool and agent gateways (AgentGateway, IBM ContextForge, ToolHive), OAuth 2.1 auth and token exchange, tool registries, and the MCP threat model (tool poisoning, rug pulls, confused deputy, token passthrough)",
     "Agent runtime infra: agent memory & context infrastructure — vector and hybrid stores (Milvus, seekdb), memory layers (mem0, Cognee, Supermemory, Hindsight, OpenViking), RAGFlow ingestion, context compression (Headroom), tenant isolation and memory poisoning",
     "Agent runtime infra: sandboxed agent execution at scale — Kubernetes Agent Sandbox (Sandbox, SandboxTemplate, SandboxClaim, warm pools), gVisor vs Kata vs Firecracker, Daytona/OpenSandbox/E2B-style sandbox APIs, Coder workspaces, snapshot/resume and cold-start economics",

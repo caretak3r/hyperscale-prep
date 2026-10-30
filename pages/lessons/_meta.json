@@ -48,5 +48,6 @@
   "47-dns-service-discovery-east-west-lb": "47 — DNS, service discovery & east-west LB (CoreDNS, NodeLocal, EndpointSlices, conntrack, inference gateways)",
   "48-workload-identity-secrets-pki-fleet-scale": "48 — Workload identity, secrets & PKI (SPIFFE/SPIRE, cloud WIF, cert rotation, weight-bucket scoping)",
   "49-fleet-observability-pipelines-scale": "49 — Fleet observability pipelines (Prometheus sharding, Thanos/Mimir, cardinality budgets, telemetry cost)",
-  "50-slo-error-budget-alerting-fleet-scale": "50 — SLOs, error budgets & alerting (burn-rate alerts, routing across 100+ clusters, paging hygiene)"
+  "50-slo-error-budget-alerting-fleet-scale": "50 — SLOs, error budgets & alerting (burn-rate alerts, routing across 100+ clusters, paging hygiene)",
+  "51-gitops-progressive-delivery-fleet-scale": "51 — GitOps & progressive delivery (ApplicationSets/Flux, rings, drift, SLO-gated promotion)"
 }
