@@ -51,5 +51,6 @@
   "50-slo-error-budget-alerting-fleet-scale": "50 — SLOs, error budgets & alerting (burn-rate alerts, routing across 100+ clusters, paging hygiene)",
   "51-gitops-progressive-delivery-fleet-scale": "51 — GitOps & progressive delivery (ApplicationSets/Flux, rings, drift, SLO-gated promotion)",
   "52-mcp-a2a-gateways-fleet-scale": "52 — MCP & A2A at fleet scale (agentgateway/ToolHive/ContextForge, OAuth, token exchange, MCP threat model)",
-  "53-agent-memory-context-infrastructure": "53 — Agent memory & context infra (Milvus/seekdb tenancy, mem0/Hindsight/Cognee, hybrid recall, memory poisoning)"
+  "53-agent-memory-context-infrastructure": "53 — Agent memory & context infra (Milvus/seekdb tenancy, mem0/Hindsight/Cognee, hybrid recall, memory poisoning)",
+  "54-sandboxed-agent-execution-scale": "54 — Sandboxed agent execution at scale (agent-sandbox claims/warm pools, gVisor/Kata/Firecracker, snapshots, cold-start economics)"
 }
