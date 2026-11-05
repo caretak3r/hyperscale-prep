@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening — especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 57,
+  "next_lesson": 58,
   "completed": [
     {
       "n": 1,
@@ -284,10 +284,14 @@
       "n": 56,
       "title": "Agent runtime infra: agent observability & evaluation — OpenTelemetry GenAI semantic conventions, trace pipelines (Langfuse, Arize Phoenix, Opik), trace sampling and cost per agent task, promptfoo red teaming in CI, and keeping prompts and PII out of the wrong stores",
       "date": "2026-11-04"
+    },
+    {
+      "n": 57,
+      "title": "Agent runtime infra: agent UI protocols & durable agent execution — AG-UI event streams and A2UI declarative UI, SSE/WebSocket fan-out at scale, human-in-the-loop interrupts, durable runs with checkpointed state and resume after node loss",
+      "date": "2026-11-05"
     }
   ],
   "upcoming": [
-    "Agent runtime infra: agent UI protocols & durable agent execution — AG-UI event streams and A2UI declarative UI, SSE/WebSocket fan-out at scale, human-in-the-loop interrupts, durable runs with checkpointed state and resume after node loss",
     "Agent runtime infra: agent identity & delegated authorization — per-agent workload identity, OAuth on-behalf-of and token exchange, short-lived scoped tool credentials, step-up approvals for risky actions, and fleet-wide agent kill switches",
     "Agent runtime infra: hosting coding agents for an org — Claude Code, Codex, OpenHands, Goose and Gemini CLI fleets, harnesses and Agent Skills distribution, per-repo credential scoping, model-gateway budgets and auditing agent-authored changes",
     "Agent runtime infra: multi-agent orchestration & workflow builders as platform services — multi-tenant Dify, n8n, Langflow and Flowise, Mastra/Deer Flow-style orchestration, plugin and node supply-chain risk, secrets in workflows, and blast-radius limits for agent swarms",
