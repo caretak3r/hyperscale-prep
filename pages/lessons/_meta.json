@@ -55,5 +55,6 @@
   "54-sandboxed-agent-execution-scale": "54 — Sandboxed agent execution at scale (agent-sandbox claims/warm pools, gVisor/Kata/Firecracker, snapshots, cold-start economics)",
   "55-browser-computer-use-agent-infra": "55 — Browser & computer-use agent infra (headless fleets, CUA desktops, session vaults, egress proxies, SSRF, prompt injection)",
   "56-agent-observability-evaluation": "56 — Agent observability & evaluation (OTel GenAI semconv, tail sampling, cost per task, Langfuse/Phoenix/Opik, promptfoo red teaming)",
-  "57-agent-ui-protocols-durable-execution": "57 — Agent UI protocols & durable execution (AG-UI, A2UI, SSE fan-out, HITL interrupts, LangGraph/Temporal resume)"
+  "57-agent-ui-protocols-durable-execution": "57 — Agent UI protocols & durable execution (AG-UI, A2UI, SSE fan-out, HITL interrupts, LangGraph/Temporal resume)",
+  "58-agent-identity-delegated-authorization": "58 — Agent identity & delegated authorization (SPIFFE agent identity, token exchange sub/act, DPoP-bound tool creds, step-up, kill switches)"
 }
