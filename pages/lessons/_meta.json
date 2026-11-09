@@ -57,5 +57,6 @@
   "56-agent-observability-evaluation": "56 — Agent observability & evaluation (OTel GenAI semconv, tail sampling, cost per task, Langfuse/Phoenix/Opik, promptfoo red teaming)",
   "57-agent-ui-protocols-durable-execution": "57 — Agent UI protocols & durable execution (AG-UI, A2UI, SSE fan-out, HITL interrupts, LangGraph/Temporal resume)",
   "58-agent-identity-delegated-authorization": "58 — Agent identity & delegated authorization (SPIFFE agent identity, token exchange sub/act, DPoP-bound tool creds, step-up, kill switches)",
-  "59-hosting-coding-agents-org": "59 — Hosting coding agents for an org (Claude Code/Codex/Gemini CLI/Goose/OpenHands policy, per-repo tokens, gateway budgets, agent commit audit)"
+  "59-hosting-coding-agents-org": "59 — Hosting coding agents for an org (Claude Code/Codex/Gemini CLI/Goose/OpenHands policy, per-repo tokens, gateway budgets, agent commit audit)",
+  "60-workflow-builders-multi-agent-orchestration": "60 — Workflow builders & multi-agent orchestration as platform services (n8n/Langflow/Flowise/Dify isolation, code-node CVEs, MCP stdio, swarm limits)"
 }
