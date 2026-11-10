@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening — especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 61,
+  "next_lesson": 62,
   "completed": [
     {
       "n": 1,
@@ -304,10 +304,15 @@
       "n": 60,
       "title": "Agent runtime infra: multi-agent orchestration & workflow builders as platform services — multi-tenant Dify, n8n, Langflow and Flowise, code-node and plugin supply-chain risk, secrets in workflows and blast-radius limits for agent swarms",
       "date": "2026-11-09"
+    },
+    {
+      "n": 61,
+      "title": "Agent runtime infra capstone: designing an agent platform for 10K concurrent agents — gateway, memory, sandbox, browser and observability layers on Kubernetes/GPU cells, capacity math, SLOs, cost per agent task and the security review",
+      "date": "2026-11-10"
     }
   ],
   "upcoming": [
-    "Agent runtime infra capstone: designing an agent platform for 10K concurrent agents — gateway, memory, sandbox, browser and observability layers on Kubernetes/GPU cells, capacity math, SLOs, cost per agent task and the security review"
+    "Full mock system-design interview: a hyperscale GPU and agent platform end to end (100+ clusters, 10K+ nodes), timed, with a scoring rubric"
   ],
   "site_url": "https://caretak3r.github.io/hyperscale-prep/",
   "sources": {
