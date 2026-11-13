@@ -61,5 +61,6 @@
   "60-workflow-builders-multi-agent-orchestration": "60 — Workflow builders & multi-agent orchestration as platform services (n8n/Langflow/Flowise/Dify isolation, code-node CVEs, MCP stdio, swarm limits)",
   "61-agent-platform-capstone-10k": "61 — Capstone: agent platform for 10K concurrent agents (cells, capacity math, SLOs, cost per task, security review)",
   "62-mock-system-design-gpu-agent-platform": "62 — Mock system-design interview: GPU + agent platform end to end (timed, numbers, security review, curveball, scoring rubric)",
-  "63-mock-troubleshooting-gpu-agent-fleet": "63 — Mock troubleshooting interview: multi-symptom GPU + agent fleet incident (registry cert change, Xid 79, APF 429s, safe fix gate, rubric)"
+  "63-mock-troubleshooting-gpu-agent-fleet": "63 — Mock troubleshooting interview: multi-symptom GPU + agent fleet incident (registry cert change, Xid 79, APF 429s, safe fix gate, rubric)",
+  "64-mock-security-deep-dive-weights-platform": "64 — Mock security deep-dive interview: threat-model a weights, training + serving platform (assets, trust boundaries, ranked attack paths, pickle trap gate, rubric)"
 }
