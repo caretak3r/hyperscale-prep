@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening — especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 65,
+  "next_lesson": 66,
   "completed": [
     {
       "n": 1,
@@ -324,10 +324,15 @@
       "n": 64,
       "title": "Mock security deep-dive interview: threat-model a model-weights, training and serving platform, timed, with a scoring rubric",
       "date": "2026-11-13"
+    },
+    {
+      "n": 65,
+      "title": "Mock behavioral and leadership interview for a staff platform role: incidents you led, migrations you drove, disagreements and tradeoffs, with STAR stories and a scoring rubric",
+      "date": "2026-11-14"
     }
   ],
   "upcoming": [
-    "Mock behavioral and leadership interview for a staff platform role: incidents you led, migrations you drove, disagreements and tradeoffs, with STAR stories and a scoring rubric"
+    "Full-loop dress rehearsal: four back-to-back mock rounds (system design, troubleshooting, security deep-dive, behavioral) under real timing, with a debrief, cross-round consistency check and a final flashcard deck of numbers, commands and soundbites from Lessons 1-65"
   ],
   "site_url": "https://caretak3r.github.io/hyperscale-prep/",
   "sources": {
