@@ -1,0 +1,61 @@
+#separator:tab
+#html:false
+#tags column:3
+Error budget of 99.9% over 30 days? And 99.5%?	43.2 minutes of full outage (0.1% of requests); 99.5% is 3.6 hours (L50)	hyperscale-prep numbers
+The two paging burn-rate alerts	14.4x over 1h AND 5m (spends 2% of a 30-day budget in an hour); 6x over 6h AND 30m. The other two windows open tickets (L50)	hyperscale-prep numbers
+etcd quota-backend-bytes default and the usual max; what happens past it	2 GiB default, 8 GiB commonly recommended max; NOSPACE alarm and the cluster goes read-only for writes (L2, L44)	hyperscale-prep numbers
+Upstream Kubernetes scalability envelope	5,000 nodes / 150K pods (SIG Scalability); managed providers go further (L44, L62)	hyperscale-prep numbers
+kubelet version skew vs the apiserver	Never newer; up to three minors older since 1.28 (was two). Control plane moves one minor at a time (L45)	hyperscale-prep numbers
+Fleet upgrade waves for 120 clusters and the duration	1, 2, 5, 10, 25, rest with 24 h bake per wave: 6-7 working days per Kubernetes minor (L45, L62)	hyperscale-prep numbers
+Llama 3 interruption rate and what it means at 48K GPUs	419 unexpected interruptions in 54 days on 16,384 GPUs (~7.8/day); ~23/day at 48K GPUs; a 16K-GPU job fails about every 3.1 h (L62)	hyperscale-prep numbers
+Young/Daly checkpoint interval with C = 60 s, MTBF = 11,100 s	sqrt(2 x C x MTBF) = sqrt(1,332,000) = ~1,150 s, about 19 min (L29, L62)	hyperscale-prep numbers
+Power for 6,000 eight-GPU nodes	~10 kW per node (DGX H100 max 10.2 kW): ~60 MW IT, ~80 MW at PUE 1.3 (L41, L62)	hyperscale-prep numbers
+Fleet shape from 48K GPUs	8 per node = 6,000 GPU nodes, plus ~6,000 CPU nodes = ~12,000 nodes, ~120 clusters; largest job 16,384 GPUs = 2,048 nodes (L62)	hyperscale-prep numbers
+Cluster sizes: training vs inference	Training = one fabric (~1,000 GPU nodes; 2K for the biggest job). Inference ~150 nodes, sized by blast radius. Hot spares 2-3% (L62)	hyperscale-prep numbers
+GPU remediation volume at 10K nodes	~19 remediations per 1,000 nodes per day (NVIDIA GeForce NOW) = ~190/day. Tickets for automation, not pages (L35)	hyperscale-prep numbers
+SPIRE default X509-SVID TTL and the server outage budget	1 hour, rotated at about half, so ~30 min (SVID_TTL / 2) before workloads start losing certs (L48)	hyperscale-prep numbers
+Default pod resolv.conf ndots and why it hurts	ndots:5: a 3-dot name like s3.us-east-1.amazonaws.com walks every search domain first (A and AAAA) (L47)	hyperscale-prep numbers
+MTU on the backend fabric	4096 on IB, 9000 on RoCE, end to end; jumbo only on the RDMA plane (L9, L46)	hyperscale-prep numbers
+Agent platform from Little's law (10,000 agents, 360 s tasks, a step every 12 s)	~28 tasks/s (peak 56), ~833 model calls/s, 6,000 sandboxes, ~1,000 warm-pool members, cells of 2,500 (L61)	hyperscale-prep numbers
+Share of cost per agent task that is tokens	About 98%: fix steps per task and prefix caching before compute (L61)	hyperscale-prep numbers
+agent-sandbox controller ceilings	~300 warm claims/s per cluster at p90 200 ms or better; ~70-85/s refill per pool; shard pools above ~500-1,000 replicas or ~30 claims/s sustained (L54, L61)	hyperscale-prep numbers
+Insider math for 50 trusted readers at 98% each	0.98^50 = ~36% chance nobody leaks. Fix: fewer standing readers, not better people (L64)	hyperscale-prep numbers
+torch.load default and why it's not enough	weights_only=True by default since PyTorch 2.6; CVE-2025-32434 bypassed it. No untrusted pickle on the training cluster (L64)	hyperscale-prep numbers
+100 nodes x 140 GB of weights from one origin	A 19-minute outage; P2P turns it into a 45-second load. Preheat on promotion, not on scale-up (L27)	hyperscale-prep numbers
+PyTorch NCCL watchdog default timeout	10 minutes; set TORCH_NCCL_TRACE_BUFFER_SIZE and TORCH_NCCL_DUMP_ON_TIMEOUT=1 for flight-recorder dumps (L63)	hyperscale-prep numbers
+Xid 79 vs Xid 13	79: GPU fell off the bus, usually hardware. 13: usually the user's code. Classify before you remediate (L39, L63)	hyperscale-prep numbers
+GPU repair ladder	Reset, reboot, reimage, reseat, RMA; a second failure on the same serial within 30 days goes straight to RMA (L39)	hyperscale-prep numbers
+APF API version and GA release	flowcontrol.apiserver.k8s.io/v1, GA in Kubernetes 1.29 (L44)	hyperscale-prep numbers
+Pass bar shared by the four mock rubrics	70/100 or more, no 1s, and the gate dimension at 3+: security (R1), safe fix (R2), untrusted-artifact gate (R3), integrity (R4) (L62, L63, L64, L65)	hyperscale-prep numbers
+Prove a registry pull path without trusting the cache	sudo crictl pull registry/repo@sha256:<uncached-digest> (L63)	hyperscale-prep commands
+See the chain a TLS endpoint actually serves	openssl s_client -connect host:443 -servername host -showcerts </dev/null | openssl x509 -noout -issuer (L63)	hyperscale-prep commands
+Count waiting reasons across all pods	kubectl get pods -A -o json | jq -r '.items[] | ((.status.initContainerStatuses // []) + (.status.containerStatuses // []))[] | .state.waiting.reason // empty' | sort | uniq -c | sort -rn (L63)	hyperscale-prep commands
+Who is APF throttling?	sum by (priority_level, flow_schema) (rate(apiserver_flowcontrol_rejected_requests_total[5m])) (L44, L63)	hyperscale-prep commands
+Dump APF priority levels live	kubectl get --raw /debug/api_priority_and_fairness/dump_priority_levels (L63)	hyperscale-prep commands
+Find removed APIs before an upgrade	the apiserver_requested_deprecated_apis metric plus audit annotations, not grepping Git (L45)	hyperscale-prep commands
+etcd health across members	etcdctl endpoint status --cluster -w table (L62)	hyperscale-prep commands
+Cluster API rollout state	clusterctl describe cluster <name> -n fleet --show-conditions all (L62)	hyperscale-prep commands
+GPU memory health at end of burn-in	nvidia-smi -q -d ECC,ROW_REMAPPER (must be clean); dcgmi diag -r 3 (long), -r 4 (extended) (L39)	hyperscale-prep commands
+NCCL bandwidth smoke test on one node	./build/all_reduce_perf -b 8 -e 2G -f 2 -g 8 (L19)	hyperscale-prep commands
+Verify a model artifact by digest	cosign verify --key kms://... registry.internal/models/<model>@${DIGEST} (L27)	hyperscale-prep commands
+Verify weights with OpenSSF model signing, pinned to the release workflow	model_signing verify <dir> --signature <dir>/model.sig --identity <workflow-ref> --identity-provider https://token.actions.githubusercontent.com (L64)	hyperscale-prep commands
+Revert a bad change the GitOps way during an incident	git revert <sha> && git push; argocd app sync <app>; cmctl renew -n <ns> <cert> (L63)	hyperscale-prep commands
+Stop a controller hot loop	kubectl -n agent-system scale deploy agent-warmpool-controller --replicas=0 (L63)	hyperscale-prep commands
+Turn on S3 data events for the weights bucket	aws cloudtrail put-event-selectors --advanced-event-selectors with eventCategory=Data, resources.type=AWS::S3::Object, ARN prefix of the weights bucket (L64)	hyperscale-prep commands
+Enable Argo CD progressive syncs	argocd-cmd-params-cm: applicationsetcontroller.enable.progressive.syncs: "true" (then RollingSync steps) (L51, L62)	hyperscale-prep commands
+Why many clusters, in one line	"Cluster = blast-radius boundary." (L1)	hyperscale-prep soundbites
+Tags vs digests	"Tags move; digests don't. I deploy @sha256 and admit-time verifyDigest." (L12)	hyperscale-prep soundbites
+Signed image, unsigned weights	"Signed image + unsigned weight = still broken. Verify both planes." (L13)	hyperscale-prep soundbites
+Train vs serve separation	"Train and serve are different namespaces, different SAs, different GPU pools. Sharing any one of those is how exfil happens." (L14)	hyperscale-prep soundbites
+Model output and the sandbox	"Model output is untrusted input. The prompt is not a security boundary; the gateway, the sandbox and the egress proxy are." (L34)	hyperscale-prep soundbites
+First incident question	"Mitigate first, root-cause second, and the first question is always what changed." (L35)	hyperscale-prep soundbites
+Three workloads	"Training is fabric-bound, inference is latency-bound, agents are token-bound and hostile." (L62)	hyperscale-prep soundbites
+Tier-0 down	"If tier-0 is down, nothing stops serving or training. Only change stops." (L62)	hyperscale-prep soundbites
+Bucket policy AND trap	"One Deny statement with two conditions is an AND. Write two statements." (L62)	hyperscale-prep soundbites
+New pulls fail, old pods fine	"Existing pods work, new pulls don't. That's a dependency on the pull path, not a capacity problem." (L63)	hyperscale-prep soundbites
+The safe-fix line (say it in R2, R3 and R4)	"TLS protects the pipe, signatures protect the artifact." (L63, L65)	hyperscale-prep soundbites
+APF 429s	"429s are a who, not a how-much. Find the client in APF before you scale the API server." (L63)	hyperscale-prep soundbites
+Untrusted bytes	"Parsing untrusted bytes is code execution until proven otherwise." (L64)	hyperscale-prep soundbites
+Two locks	"Two locks on the weights: a bucket policy and a key policy. When one drifts, the other still fails closed." (L64)	hyperscale-prep soundbites
+Agents and weights	"Agent cells can't reach weights, registries or deploy APIs. Promotion is a human-gated pipeline, not a tool call." (L61)	hyperscale-prep soundbites
+Confidentiality	"I can't go into my last employer's specifics, but here's how I'd design it for you." (L65)	hyperscale-prep soundbites
