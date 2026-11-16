@@ -115,7 +115,7 @@ flowchart TB
 ### 3. HPA math that bites
 
 - **Formula:** `desired = ceil(current × currentMetric ÷ target)`. Multiple metrics are computed independently and the **max** wins.
-- **Tolerance:** no action while the ratio is within ±10% (`--horizontal-pod-autoscaler-tolerance`). KEP-4951 (beta, on by default in 1.35) adds per-HPA `behavior.scaleUp.tolerance` / `scaleDown.tolerance`. Use a tighter scale-up tolerance (e.g., 0.05) on expensive GPU pools where 10% equals a whole replica.
+- **Tolerance:** no action while the ratio is within ±10% (`--horizontal-pod-autoscaler-tolerance`). KEP-4951 (alpha 1.33, beta but off by default in 1.35–1.36, GA in 1.37; corrected 2026-11-16, see [L67](/lessons/67-post-loop-maintenance-review-refresh)) adds per-HPA `behavior.scaleUp.tolerance` / `scaleDown.tolerance`. Use a tighter scale-up tolerance (e.g., 0.05) on expensive GPU pools where 10% equals a whole replica.
 - **Sync:** the controller evaluates every 15 s. Add Prometheus scrape (15–30 s), any recording-rule interval, and KEDA's query: **45–90 s before a pod even goes Pending**. KEDA's OTel add-on pushes metrics and removes most of the scrape lag.
 - **Default behavior:** scaleUp has no stabilization and allows +100% or +4 pods per 15 s (whichever is larger). scaleDown uses a **300 s** stabilization window and allows −100% per 15 s.
 - **Loading pods:** for `Pods` metrics, pods that are Pending or not yet exporting metrics count as 0 on scale-up (vLLM's `/metrics` only comes up after the model loads), which damps overshoot. For **`External` metrics with `AverageValue`** (what KEDA emits), the desired count is just `ceil(total ÷ target)`, with **no readiness discount**. While a replica spends 6 minutes hydrating, demand stays high and the HPA keeps adding replicas: **overshoot**. When they all go Ready together, demand collapses and you **flap**.
@@ -271,7 +271,7 @@ spec:
       target: { type: AverageValue, averageValue: "700m" }
   behavior:
     scaleUp:
-      tolerance: 0.05                 # KEP-4951 (beta 1.35): 5% band on an expensive pool
+      tolerance: 0.05                 # KEP-4951 (GA 1.37; gate HPAConfigurableTolerance before): 5% band on an expensive pool
       stabilizationWindowSeconds: 180
       policies: [ { type: Percent, value: 50, periodSeconds: 60 } ]
     scaleDown:

@@ -9,7 +9,7 @@
 Interviewers at AI platform shops (fuel: [wafer-ai/gpu-perf-engineering-resources](https://github.com/wafer-ai/gpu-perf-engineering-resources)) want evidence you've actually lived through a **scale-up storm** — not that you know `docker pull` exists:
 
 - **Weight registries** — OCI artifacts (ORAS / modctl / CNCF ModelPack) vs bucket prefixes vs Hugging Face mirrors; Harbor/ECR/Artifact Registry with immutable tags, retention, replication to cells
-- **Delivery planes** — Kubernetes **ImageVolume** (KEP-4639: beta 1.33, on by default 1.35), KServe **Modelcars** / `LocalModelCache`, CSI (Mountpoint for S3, GCS FUSE, Hyperdisk ML ROX, FSx/Lustre), local NVMe caches
+- **Delivery planes** — Kubernetes **ImageVolume** (KEP-4639: beta 1.33, on by default 1.35, GA 1.36), KServe **Modelcars** / `LocalModelCache`, CSI (Mountpoint for S3, GCS FUSE, Hyperdisk ML ROX, FSx/Lustre), local NVMe caches
 - **Fan-out** — P2P (Dragonfly, Spegel, Kraken), preheat-before-scale, lazy loading (SOCI, eStargz, Nydus, GKE image streaming) and *why lazy loading doesn't help inference weights much*
 - **Load path into HBM** — safetensors mmap vs Run:ai Model Streamer (`--load-format runai_streamer`), TP-pre-sharded weights, `torch.compile`/CUDA-graph caches; the cold-start waterfall
 - **Checkpoint lifecycle** — sharded/async checkpoints (PyTorch DCP), commit markers, tiering NVMe → object store, retention ladders, promotion: train ckpt → consolidated serving weights → quantize → eval → sign → registry
@@ -92,7 +92,7 @@ Common hyperscale pattern: **object store is the warehouse, OCI registry is the 
 |---|---|---|---|
 | **Baked into image** | `COPY model/` in Dockerfile | Tiny models, air-gapped edge | Every engine CVE patch re-ships 140 GB; double disk |
 | **Init container download** | `aws s3 cp` / `huggingface-cli download` to `emptyDir` | Simple, universal | Serial, per-pod, no sharing across pods on the node; burns ephemeral storage |
-| **ImageVolume / Modelcar** | `volumes[].image.reference` (K8s ≥1.33 beta; on by default 1.35) or KServe `oci://` sidecar | Model and engine versioned separately; shared per node; registry tooling | Runtime support (CRI-O ≥1.31, containerd 2.1+); kubelet image GC can evict it; `IfNotPresent` credential gap (see Security) |
+| **ImageVolume / Modelcar** | `volumes[].image.reference` (K8s ≥1.33 beta; on by default 1.35; GA 1.36) or KServe `oci://` sidecar | Model and engine versioned separately; shared per node; registry tooling | Runtime support (CRI-O ≥1.31, containerd 2.1+); kubelet image GC can evict it; `IfNotPresent` credential gap (see Security) |
 | **CSI mount of object store / parallel FS** | Mountpoint for S3, GCS FUSE (file cache + parallel download), Hyperdisk ML (ROX, many attachers), FSx/Lustre | Huge models, many replicas, no per-node copy | Default stripe count 1 on Lustre = one OST bottleneck; FUSE page-cache thrash; mmap random reads over network |
 | **Node-local model cache** | KServe `LocalModelCache`, DaemonSet preloader, Dragonfly preheat to NVMe | Predictable cold start, scale-to-one | Cache coherence = digest naming; disk sizing; who evicts? |
 
@@ -333,7 +333,7 @@ sum(rate(registry_http_response_size_bytes_sum{repo=~"models/.*"}[5m]))
 | Host OOM during async save | Staging full state to RAM on a node already tight | Stage to NVMe; reduce save frequency; pin memory budget |
 | Checkpoint bucket bill doubles monthly | No retention ladder; incomplete multipart uploads | Lifecycle rules by `ckpt-class`; abort incomplete MPU; promote-then-delete |
 | Can't restore on a different GPU count | Hand-rolled per-rank format | DCP resharding; or consolidate on promotion |
-| ImageVolume pod stuck `ContainerCreating` | Feature gate off / runtime too old / artifact media type unsupported | K8s ≥1.33 with gate (default on 1.35); CRI-O ≥1.31 or containerd 2.1+; check runtime logs |
+| ImageVolume pod stuck `ContainerCreating` | Feature gate off / runtime too old / artifact media type unsupported | K8s ≥1.33 with gate (default on 1.35, GA 1.36); CRI-O ≥1.31 or containerd 2.1+; check runtime logs |
 | New cell routed traffic but TTFT terrible for 10 min | Router admitted cell before weights were warm | Gate cell admission on digest cache-hit ratio ([L24](/lessons/24-multi-cluster-inference-routing-capacity)) |
 
 ## Security & hardening

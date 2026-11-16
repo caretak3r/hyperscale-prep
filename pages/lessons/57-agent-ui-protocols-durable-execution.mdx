@@ -123,7 +123,7 @@ location /v1/runs/ {
 }
 ```
 
-ingress-nginx annotations: `nginx.ingress.kubernetes.io/proxy-buffering: "off"`, `nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"`. Raise the ALB idle timeout (`alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=3600`) or keep heartbeats under 60s.
+ingress-nginx annotations: `nginx.ingress.kubernetes.io/proxy-buffering: "off"`, `nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"`. Raise the ALB idle timeout (`alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=3600`) or keep heartbeats under 60s. *(Freshness note, 2026-11-16: upstream ingress-nginx maintenance ended in March 2026 and new CVEs such as CVE-2026-116472 won't be fixed upstream; treat these annotations as legacy and plan a Gateway API controller. See [L67](/lessons/67-post-loop-maintenance-review-refresh).)*
 
 **2. Gateway API / Envoy: turn off the 15s route timeout for streams only.**
 
