@@ -22,7 +22,7 @@ The [Lesson 67](/lessons/67-post-loop-maintenance-review-refresh) audit flagged 
 
 ![Kubernetes 1.36-1.38 for GPU and AI platforms: feature stages verified on 2026-11-17 (ImageVolume and MutatingAdmissionPolicy GA in 1.36, HPA tolerance GA and locked in 1.37, DRA follow-ups in 1.36 and 1.37, pod-level checkpoint alpha in 1.37, 1.38 unreleased), the inference request path through Gateway, HTTPRoute, InferencePool and endpoint picker to vLLM pods with weights mounted as signed OCI image volumes and GPUs from DRA claims, checkpoint/restore attack surface with runc and containerd fixed versions, and the five-wave upgrade plan for 120 clusters with gates](/k8s-136-138-gpu-ai-platforms.png)
 
-**One inference pod, every 1.36–1.37 feature on its path.** Admission (MAP mutates, VAP validates), weights as a digest-pinned image volume, the GPU from a DRA claim with a ranked fallback, autoscaling with asymmetric tolerance, traffic from a Gateway through an InferencePool and its endpoint picker. The red edges are the checkpoint/restore surface.
+**One inference pod, every 1.36–1.37 feature on its path.** Admission (MAP mutates, VAP validates), weights as a digest-pinned image volume, the GPU from a DRA claim with a ranked fallback, autoscaling with asymmetric tolerance, traffic from a Gateway through an InferencePool and its endpoint picker. The dotted edges are the checkpoint/restore surface.
 
 ```mermaid
 flowchart LR
