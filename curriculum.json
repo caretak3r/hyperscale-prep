@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening — especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 68,
+  "next_lesson": 69,
   "completed": [
     {
       "n": 1,
@@ -339,10 +339,15 @@
       "n": 67,
       "title": "Post-loop maintenance: spaced-repetition review of the Lesson 66 flashcard deck, re-running the weakest round from the dress-rehearsal debrief, and a quarterly refresh of fast-moving facts (Kubernetes versions and skew, CVEs, GPU generations, agent-platform tooling) so lesson numbers stay current",
       "date": "2026-11-16"
+    },
+    {
+      "n": 68,
+      "title": "Kubernetes 1.36-1.38 for GPU and AI platforms, from the Lesson 67 fact audit: ImageVolume and MutatingAdmissionPolicy at GA, HPA configurable tolerance at GA, DRA follow-ups, container checkpoint/restore as a feature and an attack surface (runc/containerd CVEs), and migrating off retired ingress-nginx to Gateway API with inference routing (Gateway API Inference Extension), with upgrade gates for a 120-cluster fleet",
+      "date": "2026-11-17"
     }
   ],
   "upcoming": [
-    "Kubernetes 1.36-1.38 for GPU and AI platforms, from the Lesson 67 fact audit: ImageVolume and MutatingAdmissionPolicy at GA, HPA configurable tolerance at GA, DRA follow-ups, container checkpoint/restore as a feature and an attack surface (runc/containerd CVEs), and migrating off retired ingress-nginx to Gateway API with inference routing, with upgrade gates for a 120-cluster fleet",
+    "Interview-week playbook for the hyperscale loop: a final 7-day plan (daily deck and L68 refresh-fact review, one timed re-run of the weakest round, numbers card and claims ledger re-verified the day before, virtual-loop logistics and environment check, day-of routine with warm-up, soundbite pass and questions per interviewer, and a post-loop debrief template that feeds the February 2027 refresh)",
     "Continuing maintenance: next quarterly fact refresh in February 2027 after Kubernetes 1.38 (rerun fact_audit.py and feeds.sh, update errata and the refresh flashcard file)"
   ],
   "site_url": "https://caretak3r.github.io/hyperscale-prep/",
