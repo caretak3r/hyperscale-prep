@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening — especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 69,
+  "next_lesson": 70,
   "completed": [
     {
       "n": 1,
@@ -344,10 +344,15 @@
       "n": 68,
       "title": "Kubernetes 1.36-1.38 for GPU and AI platforms, from the Lesson 67 fact audit: ImageVolume and MutatingAdmissionPolicy at GA, HPA configurable tolerance at GA, DRA follow-ups, container checkpoint/restore as a feature and an attack surface (runc/containerd CVEs), and migrating off retired ingress-nginx to Gateway API with inference routing (Gateway API Inference Extension), with upgrade gates for a 120-cluster fleet",
       "date": "2026-11-17"
+    },
+    {
+      "n": 69,
+      "title": "Interview-week playbook for the hyperscale loop: final 7-day plan (weakest-first card schedule with week.py incl. new L68 card file, one timed re-run on D-3, ledger_check.py claims reconciliation that found the 120-cluster upgrade-wave conflict between L62/L66 and L68, env_check.sh for virtual loops, day-of routine, questions per interviewer, debrief.py feeding the February 2027 refresh) with interview-week security (Contagious Interview lure, sandboxed take-homes, pickle gate, screen-share hygiene, weights-chain recital, confidentiality)",
+      "date": "2026-11-18"
     }
   ],
   "upcoming": [
-    "Interview-week playbook for the hyperscale loop: a final 7-day plan (daily deck and L68 refresh-fact review, one timed re-run of the weakest round, numbers card and claims ledger re-verified the day before, virtual-loop logistics and environment check, day-of routine with warm-up, soundbite pass and questions per interviewer, and a post-loop debrief template that feeds the February 2027 refresh)",
+    "Rack-scale GPU systems in operation (GB200/GB300 NVL72-class): NVLink domain as a failure domain, ComputeDomains and IMEX via the NVIDIA DRA driver, partial-rack failures and scheduling, liquid-cooling and power telemetry as paging signals, rack-level burn-in and RMA, and the security boundary of a shared NVLink fabric",
     "Continuing maintenance: next quarterly fact refresh in February 2027 after Kubernetes 1.38 (rerun fact_audit.py and feeds.sh, update errata and the refresh flashcard file)"
   ],
   "site_url": "https://caretak3r.github.io/hyperscale-prep/",

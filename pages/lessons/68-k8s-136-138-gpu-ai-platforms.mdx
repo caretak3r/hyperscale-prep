@@ -789,6 +789,7 @@ done
 - "Ingress-nginx was retired in March 2026. We inventory it, run ingress2gateway, re-test the five behaviors that don't translate, and put inference behind an InferencePool with an endpoint picker."
 - "1.38 isn't out until mid-December. I won't quote what's in it, and it doesn't go to production until it's had a few patch releases."
 - "120 clusters move in five waves, 2, 6, 16, 36, 60, with a preflight per cluster and SLO gates per wave. Control planes go one minor at a time; node pools get replaced, never upgraded in place."
+  *Consistency note (2026-11-18):* the L62/L66 deck uses waves of 1, 2, 5, 10, 25, rest. Both plans are valid. Pick one per loop ([L69](/lessons/69-interview-week-playbook-hyperscale-loop) claims ledger).
 
 ## Watch (talks & demos)
 

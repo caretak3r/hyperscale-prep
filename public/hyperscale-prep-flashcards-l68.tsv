@@ -1,0 +1,14 @@
+#separator:tab
+#html:false
+#tags column:3
+ImageVolume, MutatingAdmissionPolicy, HPA configurable tolerance: GA release of each, and which is locked	ImageVolume GA 1.36; MutatingAdmissionPolicy GA 1.36 (admissionregistration/v1); HPA configurable tolerance GA and LOCKED in 1.37 (L68)	hyperscale-prep l68 numbers
+A component still runs --feature-gates=X=false for a gate that is GA and locked. What happens?	It refuses to start. Make it a preflight check on every cluster, not a postmortem (L68)	hyperscale-prep l68 soundbites
+Kubernetes 1.38 status in Nov 2026	Not released: v1.38.0-beta.0 published 2026-11-06 UTC; v1.38.0 planned 2026-12-16. Quote nothing about its contents (L68)	hyperscale-prep l68 numbers
+When does 1.35 go EOL?	2027-02-28 (maintenance mode from 2026-12-28) (L68)	hyperscale-prep l68 numbers
+Asymmetric HPA tolerance for an 8-replica GPU pool	scaleUp.tolerance 0.05 (acts above 1.05: 8 to 9 at a 6% overshoot); scaleDown.tolerance 0.20 plus a long stabilization window, because a replica takes minutes to come back (L28, L68)	hyperscale-prep l68 commands
+Weights as an ImageVolume: the admission trap	Signature/digest policy must check spec.volumes[*].image.reference, not just container images; the mount is read-only and re-resolved only when the pod is recreated (L27, L68)	hyperscale-prep l68 soundbites
+One GPU on an 8-GPU node throws Xid 79	DeviceTaintRule on that device (DRA device taints, GA 1.37), not a node cordon; seven healthy GPUs keep working (L68)	hyperscale-prep l68 soundbites
+What a container checkpoint is, and the RBAC to create one	A full memory dump (tokens, keys, KV cache with prompts). Creating one is create on nodes/checkpoint; restoring one is running untrusted state (L68)	hyperscale-prep l68 soundbites
+ingress-nginx status	Retired 2026-03-24: no releases or security fixes; repo archived. Inventory, ingress2gateway, re-test the behaviors that don't translate, inference behind an InferencePool (L68)	hyperscale-prep l68 numbers
+HTTPRoute to an inference pool: backendRef kind and API	kind: InferencePool, inference.networking.k8s.io/v1 (GA since GIE v1.0; latest v1.6.2). Cross-namespace needs a ReferenceGrant written by the pool's namespace owner (L68)	hyperscale-prep l68 commands
+Upgrade waves for 120 clusters: say ONE version	Deck/L62/L66: 1, 2, 5, 10, 25, rest, 24 h bake (6-7 working days per minor). L68: 2, 6, 16, 36, 60. Pick one per loop and write it in the claims ledger (L45, L62, L68, L69)	hyperscale-prep l68 numbers
