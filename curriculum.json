@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening — especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 70,
+  "next_lesson": 71,
   "completed": [
     {
       "n": 1,
@@ -349,10 +349,15 @@
       "n": 69,
       "title": "Interview-week playbook for the hyperscale loop: final 7-day plan (weakest-first card schedule with week.py incl. new L68 card file, one timed re-run on D-3, ledger_check.py claims reconciliation that found the 120-cluster upgrade-wave conflict between L62/L66 and L68, env_check.sh for virtual loops, day-of routine, questions per interviewer, debrief.py feeding the February 2027 refresh) with interview-week security (Contagious Interview lure, sandboxed take-homes, pickle gate, screen-share hygiene, weights-chain recital, confidentiality)",
       "date": "2026-11-18"
+    },
+    {
+      "n": 70,
+      "title": "Rack-scale GPU systems in operation (GB200/GB300 NVL72-class): NVLink domain as a failure domain (switch-tray 1/9 bandwidth math, cluster UUID vs clique), ComputeDomains and IMEX via the DRA driver v0.5.1 (kubernetes-sigs move, one CD per node, numNodes deprecated), partial-rack failures and Kueue TAS hot swap (16-tray partitions + spares), liquid-cooling/leak and power telemetry as paging signals, rack-level burn-in (dcgmi mndiag) and RMA re-entry, and the shared NVLink/IMEX security boundary (per-CD NetworkPolicy, IMEX-claim VAPs, BMC/Redfish/firmware)",
+      "date": "2026-11-19"
     }
   ],
   "upcoming": [
-    "Rack-scale GPU systems in operation (GB200/GB300 NVL72-class): NVLink domain as a failure domain, ComputeDomains and IMEX via the NVIDIA DRA driver, partial-rack failures and scheduling, liquid-cooling and power telemetry as paging signals, rack-level burn-in and RMA, and the security boundary of a shared NVLink fabric",
+    "Rack-scale inference serving on NVL72: disaggregated prefill/decode and wide expert parallelism inside one NVLink domain, KV-cache transfer over NVLink vs RDMA (NIXL), ComputeDomain-backed inference replicas, blast radius of an 18-tray replica, scaling and rolling upgrades in whole-partition units, and securing KV-cache movement between tenants",
     "Continuing maintenance: next quarterly fact refresh in February 2027 after Kubernetes 1.38 (rerun fact_audit.py and feeds.sh, update errata and the refresh flashcard file)"
   ],
   "site_url": "https://caretak3r.github.io/hyperscale-prep/",

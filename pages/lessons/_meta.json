@@ -67,5 +67,6 @@
   "66-full-loop-dress-rehearsal": "66 — Full-loop dress rehearsal: four back-to-back mock rounds, debrief, cross-round security consistency check, 58-card flashcard deck",
   "67-post-loop-maintenance-review-refresh": "67 — Post-loop maintenance: spaced-repetition review, weakest-round re-run, quarterly fact refresh (K8s versions, CVEs, GPUs) with errata",
   "68-k8s-136-138-gpu-ai-platforms": "68 — Kubernetes 1.36–1.38 for GPU & AI platforms: ImageVolume + MAP GA, HPA tolerance, DRA follow-ups, checkpoint/restore attack surface, ingress-nginx → Gateway API + InferencePool, 120-cluster upgrade gates",
-  "69-interview-week-playbook-hyperscale-loop": "69 — Interview-week playbook: final 7-day plan, claims-ledger check, virtual-loop env check, day-of routine, post-loop debrief"
+  "69-interview-week-playbook-hyperscale-loop": "69 — Interview-week playbook: final 7-day plan, claims-ledger check, virtual-loop env check, day-of routine, post-loop debrief",
+  "70-rack-scale-gpu-nvl72-operations": "70 — Rack-scale GPU systems in operation (GB200/GB300 NVL72): NVLink domain as failure domain, ComputeDomains & IMEX, partial racks, cooling/power paging, burn-in/RMA, NVLink fabric security"
 }
