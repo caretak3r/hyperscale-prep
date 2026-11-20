@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening — especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 71,
+  "next_lesson": 72,
   "completed": [
     {
       "n": 1,
@@ -354,10 +354,15 @@
       "n": 70,
       "title": "Rack-scale GPU systems in operation (GB200/GB300 NVL72-class): NVLink domain as a failure domain (switch-tray 1/9 bandwidth math, cluster UUID vs clique), ComputeDomains and IMEX via the DRA driver v0.5.1 (kubernetes-sigs move, one CD per node, numNodes deprecated), partial-rack failures and Kueue TAS hot swap (16-tray partitions + spares), liquid-cooling/leak and power telemetry as paging signals, rack-level burn-in (dcgmi mndiag) and RMA re-entry, and the shared NVLink/IMEX security boundary (per-CD NetworkPolicy, IMEX-claim VAPs, BMC/Redfish/firmware)",
       "date": "2026-11-19"
+    },
+    {
+      "n": 71,
+      "title": "Rack-scale inference serving on NVL72: slice = NVLink partition = ComputeDomain (DisaggregatedSet ExclusiveTopology on nvidia.com/gpu.clique, LWS v1.0 groups of whole trays), NIXL KV transfer over NVLink cuda_ipc vs UCX rc RDMA (cumem allocator + UCX_CUDA_IPC_ENABLE_MNNVL + IMEX channel; wire-time math MLA/FP8 vs GQA/BF16), pull protocol, 30 s KV lease and compatibility hash, wide EP (DeepEP/flashinfer MNNVL all2all, EPLB, vLLM fault-tolerance scale_down), blast radius of 18-tray vs 16-tray vs 2x8-tray slices (slice_plan.py), whole-partition scaling and rollout lanes (maxSurge 0, revision pinning, maxGroupRestarts/restartBackoff), and securing KV movement between tenants (kv_transfer_params as attacker input, unauthenticated NIXL side channel, NetworkPolicy blind spots for NVLink/RDMA, cache_salt CVEs, hostIPC/hostPID VAP, weights verify)",
+      "date": "2026-11-20"
     }
   ],
   "upcoming": [
-    "Rack-scale inference serving on NVL72: disaggregated prefill/decode and wide expert parallelism inside one NVLink domain, KV-cache transfer over NVLink vs RDMA (NIXL), ComputeDomain-backed inference replicas, blast radius of an 18-tray replica, scaling and rolling upgrades in whole-partition units, and securing KV-cache movement between tenants",
+    "KV-cache tiering and prefix-aware routing at rack scale: HBM -> Grace memory -> local NVMe -> remote/object tiers via NIXL (GDS, S3 over RDMA), LMCache and Dynamo's KV block manager, prefix-cache-aware routing (llm-d precise prefix-cache routing, Dynamo KV router events), hit-rate SLOs and capacity math, eviction and stale-index failure modes, and securing offloaded KV (per-tenant scoping, salts across tiers, encryption at rest, deletion guarantees)",
     "Continuing maintenance: next quarterly fact refresh in February 2027 after Kubernetes 1.38 (rerun fact_audit.py and feeds.sh, update errata and the refresh flashcard file)"
   ],
   "site_url": "https://caretak3r.github.io/hyperscale-prep/",
