@@ -70,5 +70,6 @@
   "69-interview-week-playbook-hyperscale-loop": "69 — Interview-week playbook: final 7-day plan, claims-ledger check, virtual-loop env check, day-of routine, post-loop debrief",
   "70-rack-scale-gpu-nvl72-operations": "70 — Rack-scale GPU systems in operation (GB200/GB300 NVL72): NVLink domain as failure domain, ComputeDomains & IMEX, partial racks, cooling/power paging, burn-in/RMA, NVLink fabric security",
   "71-rack-scale-inference-nvl72-disagg-wide-ep": "71 — Rack-scale inference on NVL72: disaggregated P/D + wide EP in one NVLink domain, NIXL KV over NVLink vs RDMA, ComputeDomain slices, 18-tray blast radius, whole-partition rollouts, securing KV between tenants",
-  "72-kv-cache-tiering-prefix-aware-routing": "72 — KV-cache tiering & prefix-aware routing at rack scale: HBM → Grace → NVMe → object via NIXL/LMCache/KVBM, precise prefix routing from KV events, hit-rate SLOs & break-even math, stale-index failures, securing offloaded KV"
+  "72-kv-cache-tiering-prefix-aware-routing": "72 — KV-cache tiering & prefix-aware routing at rack scale: HBM → Grace → NVMe → object via NIXL/LMCache/KVBM, precise prefix routing from KV events, hit-rate SLOs & break-even math, stale-index failures, securing offloaded KV",
+  "73-quantized-speculative-serving-platform": "73 — Quantized & speculative serving as a platform product: FP8/NVFP4 + KV quantization as gated release artifacts, EAGLE-3/MTP acceptance SLOs & capacity math, benchmark regression gates, signing derived artifacts with provenance to base weights"
 }

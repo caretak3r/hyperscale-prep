@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening — especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 73,
+  "next_lesson": 74,
   "completed": [
     {
       "n": 1,
@@ -364,10 +364,15 @@
       "n": 72,
       "title": "KV-cache tiering and prefix-aware routing at rack scale: tier ladder on GB200 (HBM ~250 GB KV, Grace LPDDR5X ~1.4x HBM via NVLink-C2C, local NVMe via GDS, shared object tier via NIXL OBJ / LMCache s3 / KVBM G4), vLLM OffloadingConnector TieringOffloadingSpec vs LMCache MP vs Dynamo KVBM, the hash contract (sha256_cbor, PYTHONHASHSEED, canonical_layout, block-size alignment, salt-blind router index), KV events plane (BlockStored token_ids + cache_salt, replay/gap recovery, single EPP replica, tier weights), tier_plan.py break-even math (Qwen3-32B 256 KiB/token: 32K prefix 8.6 GB, recompute ~1.6 s, G2 32 ms, NVMe 450 ms, S3/TCP loses; DeepSeek-V3 MLA FP8 34.3 KiB/token), token-weighted per-tier hit-rate SLOs, eviction vs erasure, and securing offloaded KV (salts across tiers, events fenced to router, ephemeral LUKS + per-tenant SSE-KMS crypto-shred, LMCache KV-overwrite and RCE advisories fixed in 0.5.7, kv-transfer-config as code, VAP tested on kube-apiserver v1.37.2)",
       "date": "2026-11-21"
+    },
+    {
+      "n": 73,
+      "title": "Quantized and speculative serving as a platform product: FP8_DYNAMIC/NVFP4 weights + FP8 KV scales as one release artifact (compressed-tensors vs ModelOpt hf_quant_config, ignore lists, ModelOpt kv_cache_qformat default fp8_cast, vLLM KV scale 1.0 default, NVFP4 Marlin W4A16 fallback below SM100, --linear-backend), speculative decoding (EAGLE-3 drafts welded to the verifier, MTP layer survival through quantization, draft_lm_head_quantization, lossless vs fly, num_speculative_tokens_per_batch_size off with DP>1, bursty ITL, spec-decode counters and per-request acceptance metrics), spec_capacity.py (Qwen3-32B FP8 at 4K ctx / 12 ms ITL: 31 GPUs without spec vs 13 with EAGLE-3 at alpha 0.75, 16 at 0.55; dynamic-k table), release_gate.py (lm-eval budget + MDE, vllm bench serve regression incl. acceptance-length floor), acceptance-length SLO alerts, and securing derived artifacts (model_signing + SLSA v1 provenance with verified base digest, calibration registry, derived_gate.py lab with model_signing 1.1.1 + cosign v3.1.4: 6 attacks incl. re-signed pickle/auto_map and provenance replay, speculators verifier redirect GHSA-qrj2-j723-m6w8, VAP tested on kube-apiserver v1.37.2)",
+      "date": "2026-11-22"
     }
   ],
   "upcoming": [
-    "Quantized and speculative serving as a platform product: FP8/NVFP4 weights and KV-cache quantization as release artifacts with accuracy gates, speculative decoding (EAGLE-style drafts, MTP) with acceptance-rate SLOs and capacity math, serving benchmarks as regression gates on every engine bump, and securing derived artifacts (signing quantized and draft checkpoints with provenance back to the base weights, calibration-data handling)",
+    "Multi-LoRA and adapter serving as a platform product: dynamic adapter loading and residency (vLLM --enable-lora, --max-loras, --max-cpu-loras, runtime load/unload), adapter-affinity routing in an InferencePool, capacity math for adapter swaps vs dedicated replicas, per-adapter eval and benchmark gates, and securing tenant adapters (signing and provenance back to the base weights, code-free upload paths, backdoor/poisoning review, per-tenant isolation of adapter weights and KV)",
     "Continuing maintenance: next quarterly fact refresh in February 2027 after Kubernetes 1.38 (rerun fact_audit.py and feeds.sh, update errata and the refresh flashcard file)"
   ],
   "site_url": "https://caretak3r.github.io/hyperscale-prep/",
