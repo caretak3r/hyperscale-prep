@@ -1,7 +1,7 @@
 {
   "target_jd": "hyperscale compute (100+ clusters, 10K+ nodes) + K8s/networking/security/IaC; plus AI/ML platform engineering (GPU fleets, inference/training serving) informed by https://github.com/wafer-ai/gpu-perf-engineering-resources; standing focus on security & hardening — especially deployments, model weights/checkpoints, container images, and supply-chain provenance",
   "living_doc": "pages/lessons/ (canonical); hyperscale-one-pager.md (archive)",
-  "next_lesson": 74,
+  "next_lesson": 75,
   "completed": [
     {
       "n": 1,
@@ -369,10 +369,16 @@
       "n": 73,
       "title": "Quantized and speculative serving as a platform product: FP8_DYNAMIC/NVFP4 weights + FP8 KV scales as one release artifact (compressed-tensors vs ModelOpt hf_quant_config, ignore lists, ModelOpt kv_cache_qformat default fp8_cast, vLLM KV scale 1.0 default, NVFP4 Marlin W4A16 fallback below SM100, --linear-backend), speculative decoding (EAGLE-3 drafts welded to the verifier, MTP layer survival through quantization, draft_lm_head_quantization, lossless vs fly, num_speculative_tokens_per_batch_size off with DP>1, bursty ITL, spec-decode counters and per-request acceptance metrics), spec_capacity.py (Qwen3-32B FP8 at 4K ctx / 12 ms ITL: 31 GPUs without spec vs 13 with EAGLE-3 at alpha 0.75, 16 at 0.55; dynamic-k table), release_gate.py (lm-eval budget + MDE, vllm bench serve regression incl. acceptance-length floor), acceptance-length SLO alerts, and securing derived artifacts (model_signing + SLSA v1 provenance with verified base digest, calibration registry, derived_gate.py lab with model_signing 1.1.1 + cosign v3.1.4: 6 attacks incl. re-signed pickle/auto_map and provenance replay, speculators verifier redirect GHSA-qrj2-j723-m6w8, VAP tested on kube-apiserver v1.37.2)",
       "date": "2026-11-22"
+    },
+    {
+      "n": 74,
+      "title": "Multi-LoRA and adapter serving as a platform product: residency tiers (vLLM --max-loras = per-batch GPU slots with stacked buffers at --max-lora-rank: Qwen3-32B 16 MiB per rank unit, 16x64 = 16 GiB = 65,536 BF16 KV tokens; --max-cpu-loras LRU; path), deferred waits (num_requests_waiting_by_reason deferred), runtime load/unload semantics (one API key, unload = registry only, in-place reload at same path reuses KV keyed on name+path), resolver plugins (filesystem resolver path traversal + base-name 404 shown in resolver_lab.py), llm-d-router v1.0.0 lora-affinity-scorer (1.0/0.8/0.6 from vllm:lora_requests_info; vLLM-only), InferenceModelRewrite/InferenceObjective (llm-d.ai) on InferencePool v1, lora_capacity.py (200 Zipf adapters: 20 shared vs 205 dedicated replicas), per-adapter router SLIs (llm_d_epp_* by target_model_name, 1,000-name cap), and securing tenant adapters (adapter_gate.py lab with model_signing 1.1.1 + cosign v3.1.4: pickle, wrong base, rank, lm_head, alpha blow-up, NaN, tamper, unregistered data; VAP with 8 denials on kube-apiserver v1.37.2; GHSA-rh6f-3x46-j33q, GHSA-vvpg-rrww-wpmh)",
+      "date": "2026-11-23"
     }
   ],
   "upcoming": [
-    "Multi-LoRA and adapter serving as a platform product: dynamic adapter loading and residency (vLLM --enable-lora, --max-loras, --max-cpu-loras, runtime load/unload), adapter-affinity routing in an InferencePool, capacity math for adapter swaps vs dedicated replicas, per-adapter eval and benchmark gates, and securing tenant adapters (signing and provenance back to the base weights, code-free upload paths, backdoor/poisoning review, per-tenant isolation of adapter weights and KV)",
+    "Structured outputs and tool calling as a platform product: guided-decoding backends in vLLM and SGLang (xgrammar, guidance, outlines), schema compile caches and per-request grammar cost, tool-call parser drift across model and engine versions, parse-failure and schema-validity SLOs, and securing tool schemas and function-call outputs (oversized grammars as DoS, injection through tool results)",
+    "Embedding, reranker and retrieval serving fleets: pooling runners in vLLM, batch vs online embedding pools, index-freshness and recall SLOs, vector-store coupling and capacity math, re-embedding migrations when the embedding model changes, and tenant isolation of indexes and embeddings (inversion and membership-inference risk)",
     "Continuing maintenance: next quarterly fact refresh in February 2027 after Kubernetes 1.38 (rerun fact_audit.py and feeds.sh, update errata and the refresh flashcard file)"
   ],
   "site_url": "https://caretak3r.github.io/hyperscale-prep/",
