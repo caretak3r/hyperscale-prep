@@ -1,6 +1,7 @@
 {
   "index": "Home",
   "conventions": "Conventions",
+  "sre-slis-slos-slas": "SRE playbook: SLIs/SLOs/SLAs",
   "lessons": "Lessons",
   "archive": "Archive"
 }
