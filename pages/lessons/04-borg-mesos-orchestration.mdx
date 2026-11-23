@@ -307,6 +307,30 @@ description: "Prod inference only; RBAC-gated"
 
 **AI/ML fleets:** isolate training vs inference node pools; gate who can schedule onto GPU SKUs that hold loaded weights in memory. ResourceQuota + queueing (Kueue) prevents one team’s training wave from exhausting capacity used by authenticated inference — treat GPU time as a secured resource, not a free-for-all.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Borg-style schedulers give each **priority band** its own SLO. Production gets scheduling latency and low preemption; batch gets eventual throughput and is expected to be preempted. Say this distinction out loud. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Scheduling latency per band:** `scheduler_pod_scheduling_sli_duration_seconds`, measured from queue entry and including retries. Split it with your PriorityClass labels at the recording-rule level.
+- **Pending pods by queue:** `scheduler_pending_pods{queue=~"active|backoff|unschedulable|gated"}`.
+- **Preemption:** `scheduler_preemption_attempts_total` and `scheduler_preemption_victims`. Victims in the prod band should be close to zero.
+- **Gang scheduling:** `scheduler_podgroup_scheduling_attempt_duration_seconds{result}` for pod-group scheduling, and `kueue_admission_wait_time_seconds` when Kueue gates admission.
+- **Oversubscription cost:** `container_cpu_cfs_throttled_periods_total` ÷ `container_cpu_cfs_periods_total` (cAdvisor) on latency-sensitive pods.
+
+```promql
+# p99 scheduling latency (cluster-wide); split by band with a recording rule joined on pod priority
+histogram_quantile(0.99, sum by (le) (rate(scheduler_pod_scheduling_sli_duration_seconds_bucket[5m])))
+```
+
+**Example SLOs (examples, not recommendations):** 99% of prod pods scheduled in ≤ 5 s; 95% of batch gangs admitted in ≤ 30 min; under 0.1% of prod pods preempted per week.
+
+**SLA angle:** priority bands map to service tiers ("prod" vs "best-effort"). A best-effort tier should say plainly that preemption doesn't count as a failure.
+
+**Alerting:** page on prod scheduling-latency burn. Ticket on batch backlog age.
+
+**Failure signals:** preemption storms after a quota change, gangs half-placed and holding GPUs (no all-or-nothing), and `unschedulable` queue growth caused by fragmentation rather than a lack of capacity.
+
 ## Interview soundbites
 
 - **“Kubernetes is Borg-inspired, not Borg.”** Shared ideas: cells≈clusters, Borglet≈kubelet, jobs/tasks≈Pods, priority/preemption. Missing Borg allocs and first-class cell oversubscription — you reconstruct them with QoS, PriorityClass, and node pools.

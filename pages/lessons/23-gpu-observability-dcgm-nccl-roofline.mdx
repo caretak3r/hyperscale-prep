@@ -544,6 +544,32 @@ spec:
 
 **Punchline:** DCGM and NCCL canaries are **production control-plane adjacent**. **Scrape NetPol, label allowlists, signed digests, obs-only SAs, no weight mounts on diagnostics, and CMEK private metric archives** are what stop “better GPU graphs” from becoming a fleet-wide inventory and privilege leak.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+DCGM metrics are mostly **causes, not SLIs**. The SRE skill is turning them into a small set of fleet SLIs (healthy GPUs, the XID rate, throttling) and keeping the rest for diagnosis. Watch the **dcgm-exporter 4.9.0 metric renames** described in the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Healthy, schedulable GPUs vs reserve:** kube-state-metrics GPU allocatable on Ready, uncordoned nodes ÷ capacity.
+- **XID events:** `DCGM_FI_DEV_XID_ERRORS` is a *gauge of the last XID*, so use `changes()`. For counts per XID, enable `DCGM_EXP_XID_ERRORS_TOTAL{xid}`.
+- **Memory health:** `DCGM_FI_DEV_ROW_REMAP_FAILURE` and `DCGM_FI_DEV_UNCORRECTABLE_REMAPPED_ROWS`. Non-zero means a drain and RMA, not a reboot loop.
+- **Throttling:** the opt-in clock-event counter `DCGM_EXP_CLOCK_EVENTS_TOTAL`, plus power or thermal violation counters if enabled. 4.9.0 rejects raw bitmask fields such as clock-event reasons, so move alerts off the bitmask before upgrading. Throttling shows up as a TPOT regression with "healthy" GPUs.
+- **Fabric canaries:** NCCL busBW against baseline (**custom**, from canary Jobs).
+
+```promql
+# Nodes with a new XID in the last 15 min (4.8.4 gauge semantics)
+count by (cluster) (changes(DCGM_FI_DEV_XID_ERRORS[15m]) > 0)
+# 4.9.0+ with the optional counter enabled: XID 79 (GPU fell off the bus) rate
+sum by (cluster) (rate(DCGM_EXP_XID_ERRORS_TOTAL{xid="79"}[15m]))
+```
+
+**Example SLOs (examples, not recommendations):** healthy GPUs ≥ planned reserve 99.5% of the time; under 0.1% of GPUs with uncorrectable row remaps outstanding for more than 24 h; 99% of nightly NCCL canaries within 10% of baseline.
+
+**SLA angle:** none directly. These SLIs set how many GPUs you can promise serving SLOs on. The reserve is the link between DCGM and the customer SLA.
+
+**Alerting:** automation cordons and drains per-GPU faults and opens a ticket. Page on fleet patterns, for example XID 79 on dozens of nodes in minutes (a firmware or driver push) or the healthy-GPU ratio falling below reserve.
+
+**Failure signals:** an exporter upgrade that renames series and flattens every dashboard, pod-label enrichment exploding cardinality, and profiling fields (`DCGM_FI_PROF_*`) costing GPU overhead on MIG.
+
 ## Interview soundbites
 
 - **“nvidia-smi is a flashlight; DCGM + Prometheus is the smoke detector.”**

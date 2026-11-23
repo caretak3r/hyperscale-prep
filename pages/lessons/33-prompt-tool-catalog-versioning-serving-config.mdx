@@ -440,6 +440,32 @@ spec:
 
 Authors propose Bundle PRs; eval-platform + security approve label moves to `production`; break-glass overrides are signed, logged, and expire. Product cannot approve its own `money`-class tool additions without security review.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Prompts, tool catalogs and serving configs are **releases**. A label move can break production as surely as new weights. SLIs cover resolution, drift and rollout speed, with the same burn gates as a model release. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Config resolution success:** gateway requests that resolved a prompt or config digest ÷ requests (**custom**, at the resolver). A missing digest should fail closed and be counted.
+- **Drift:** serving pods whose running config digest ≠ desired (**custom** gauge), plus GitOps state from Argo CD `argocd_app_info{sync_status,health_status}`.
+- **Rollout speed:** label move to 100% of pods on the new digest, p95 (**custom**).
+- **Post-change burn:** model TTFT and error SLIs in the window after a config change. Annotate SLO dashboards with config-change events so the cause is visible.
+
+```promql
+# Argo CD apps for serving config that are OutOfSync or Degraded
+count by (name) (
+  argocd_app_info{project="serving-config", sync_status!="Synced"}
+  or argocd_app_info{project="serving-config", health_status="Degraded"}
+)
+```
+
+**Example SLOs (examples, not recommendations):** 99.99% of requests resolve a signed config digest; drift is zero for more than 15 min; 95% of label moves fully rolled out within 30 min.
+
+**SLA angle:** "prompt and tool behaviour is versioned and pinnable" can be a customer commitment. Drift SLIs are how you prove it.
+
+**Alerting:** page on post-change burn above threshold and auto-revert the label. Ticket on drift.
+
+**Failure signals:** a template change that doubles prompt length (TTFT and KV burn without any code change), a tool schema change breaking agents' tool calls, and caches serving the old digest after the label moved.
+
 ## Interview soundbites
 
 - **"Prompts, tool schemas, and serving knobs are content-addressed production config. The CatalogBundle is the unit of promotion — three digests bound to weight and serving-image digests."**

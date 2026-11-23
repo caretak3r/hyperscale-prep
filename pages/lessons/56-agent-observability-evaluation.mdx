@@ -422,6 +422,33 @@ This topic has an unusual property: **the observability system is itself one of 
 - Red-team targets use fake tenants, fake tools or sandboxed SaaS, so "excessive agency" findings can't cause real side effects.
 - Datasets built from production traces inherit the traces' sensitivity: same classification, same access controls, PII scrubbed before they land in a repo or a CI artifact.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Agent observability **is the SLI source for agent SLOs**: task success, latency per step, cost per task. It also has its own SLOs for trace completeness and eval coverage. Standardize on the OTel GenAI conventions so SLIs survive changing frameworks. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Model call latency (client view):** `gen_ai.client.operation.duration` (histogram, seconds, `gen_ai.operation.name`, `gen_ai.request.model`, `error.type`). For streaming, `gen_ai.client.inference.time_to_first_chunk`.
+- **Agent and tool steps:** `gen_ai.invoke_agent.duration` and `gen_ai.execute_tool.duration` (`gen_ai.tool.name`, `error.type`). Tool error ratio by tool is the most actionable agent SLI.
+- **Task success:** tasks finished with a passing eval verdict ÷ all tasks (**custom**, e.g. `agent_task_finished_total{eval_verdict}`). Define "success" with product owners first.
+- **Trace pipeline completeness:** spans exported ÷ spans created (`otelcol_exporter_send_failed_spans`, `otelcol_receiver_refused_spans`) and the sampled share of tasks with a full trace (**custom**).
+- **Cost per task:** tokens × price per task class (**custom**, from `gen_ai.client.token.usage`). It's an SLO-like budget, not a reliability SLI.
+
+```promql
+# Tool-call error ratio by tool (OTel -> Prometheus names; exact suffixes depend on your exporter's translation)
+sum by (gen_ai_tool_name) (rate(gen_ai_execute_tool_duration_seconds_count{error_type!=""}[10m]))
+/ sum by (gen_ai_tool_name) (rate(gen_ai_execute_tool_duration_seconds_count[10m]))
+```
+
+The GenAI semantic conventions are at **development** stability (now in the semantic-conventions-genai repo). Pin the version you emit, and expect renames.
+
+**Example SLOs (examples, not recommendations):** task success ≥ 90% for a defined task class; tool error ratio ≤ 1% for tier-1 tools; ≥ 99% of sampled tasks with complete traces; cost per task within budget 95% of days.
+
+**SLA angle:** customers ask for task-level guarantees, but you can only sell platform SLAs (availability, latency). Make quality commitments eval-based and versioned, never contractual percentages of "correct answers".
+
+**Alerting:** page on model-call availability and the tool error ratio for tier-1 tools. Ticket on eval and quality regressions. Alert on trace drops, because they silently blind task-success SLIs.
+
+**Failure signals:** high-cardinality span attributes (prompts in attributes), sampling that drops exactly the failing tasks (use tail sampling on errors), prompts or PII leaking into traces, and SDK upgrades renaming attributes.
+
 ## Interview soundbites
 
 - "Metadata goes everywhere, content goes to one locked store or nowhere. The app setting is a request; the collector is the control."

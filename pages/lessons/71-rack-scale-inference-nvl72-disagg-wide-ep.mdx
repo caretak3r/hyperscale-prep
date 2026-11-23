@@ -615,6 +615,29 @@ RBAC (`kubectl auth can-i --as=op-a -n tenant-a-serving`): `get disaggregatedset
 
 Caveats: the side-channel port range (`5600`–`5631`) has to cover `5600 + dp_rank` for every rank that runs on a host, so size it to your DP layout. The pod labels used in selectors (`disaggregatedset.x-k8s.io/name`) are the ones the controller uses for placement affinity; confirm with `kubectl get pods --show-labels` on your version. This apiserver had no CNI, so the NetworkPolicies were validated by the API, not enforced.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Rack-scale inference with disaggregation and wide-EP makes **an 18-tray replica one unit of SLO risk**. KV transfer over the wrong transport and whole-partition restarts are the main SLO killers. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **KV transfer latency and failures:** `vllm:nixl_xfer_time_seconds` (p50 and p99), `vllm:nixl_num_failed_transfers` and `vllm:nixl_num_kv_expired_reqs`. A step change in p50 transfer time after a redeploy is the signature of falling back from NVLink `cuda_ipc` to `rc` or `tcp`.
+- **TTFT split for disaggregated serving:** router TTFT (`llm_d_epp_request_ttft_seconds`) against decode-side queue (`vllm:request_queue_time_seconds`) and transfer time. Wide-EP balance on SGLang is `sglang:eplb_balancedness`.
+- **Replica availability:** ready replicas ÷ desired, where one replica is an 18-tray LWS group (`kube_statefulset_status_replicas_ready` on the leader and worker StatefulSets). LWS v1.0.0 doesn't export group-restart metrics (they're on main only), so count group recreations from events.
+- **Capacity in replica units:** spare whole partitions ≥ 1 per cell, so a failed replica can be replaced without dropping below the TTFT SLO.
+
+```promql
+# KV transfer p99 by model; alert on step changes, not just a fixed threshold
+histogram_quantile(0.99, sum by (le, model_name) (rate(vllm:nixl_xfer_time_seconds_bucket[5m])))
+```
+
+**Example SLOs (examples, not recommendations):** KV transfer p99 ≤ 20 ms inside one NVLink domain; zero failed transfers per hour at steady state; ≥ N−1 replicas ready 99.9% of the time; one spare partition per cell.
+
+**SLA angle:** with a few huge replicas, one failure removes a large share of capacity. SLA availability has to be designed with N+1 replicas, or exclusions for whole-partition maintenance windows.
+
+**Alerting:** page on transfer failures and TTFT burn. Ticket on a transfer p50 step change after deploys (transport regression) and on missing spare partitions.
+
+**Failure signals:** a missing `--enable-cumem-allocator` or MNNVL env silently using `rc`, an 18-tray group restart on one flapping tray, expert imbalance spiking ITL, and rolling upgrades taking out more than one partition.
+
 ## Interview soundbites
 
 - "On NVL72 my serving replica is a **slice**: prefill and decode LWS groups in one NVLink partition, sharing one ComputeDomain. That one unit is what I schedule, scale, upgrade, page on and give to a tenant."

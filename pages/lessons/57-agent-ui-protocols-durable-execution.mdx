@@ -332,6 +332,29 @@ The UI channel and the durable store are where an agent's decisions become **act
 - Workers' egress limited to the model gateway, tool gateway and stores ([L34](/lessons/34-agent-tool-sandboxing-egress-policy), [L52](/lessons/52-mcp-a2a-gateways-fleet-scale)); tools with real side effects run in sandboxes ([L54](/lessons/54-sandboxed-agent-execution-scale)).
 - A fleet-wide kill switch: cancel or pause all runs for an agent, tenant or tool from one control (Temporal batch cancel/terminate by visibility query; a flag the LangGraph worker checks between steps). Lesson 58 goes deeper.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Agent UI streams and durable execution turn agent runs into **long-lived sessions**. The SLIs are about streams that stay connected, interrupts that get answered, and runs that resume after a node dies rather than restarting from scratch. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Stream health:** SSE or WebSocket connects that succeed ÷ attempts, and streams ending with a terminal run event rather than a drop (**custom**, from the gateway or AG-UI server). Mid-stream drops are the "streaming stall" SLI from the playbook.
+- **Event delivery latency:** agent emits event → client receives it (**custom**, with timestamps in the event envelope).
+- **Durable resume:** runs resumed after a worker loss ÷ runs interrupted, plus resume latency. On Temporal, use `temporal_workflow_task_schedule_to_start_latency` and `temporal_activity_schedule_to_start_latency` (worker starvation) and `temporal_workflow_failed` ÷ completed (SDK metrics).
+- **Human-in-the-loop latency:** interrupt raised → human answer (**custom**). This is a product SLO, so exclude it from platform latency SLIs.
+
+```promql
+# Temporal workers starving: schedule-to-start p99 by task queue (SDK metric; check your SDK's exact suffix)
+histogram_quantile(0.99, sum by (le, task_queue) (rate(temporal_activity_schedule_to_start_latency_bucket[5m])))
+```
+
+**Example SLOs (examples, not recommendations):** 99.9% of streams end with a terminal event; event delivery ≤ 500 ms p99; ≥ 99.9% of interrupted runs resume without rerunning completed steps; schedule-to-start ≤ 1 s p99.
+
+**SLA angle:** a "durable" claim means no lost runs. Express it as runs lost per million, not uptime. Exclude time spent waiting on humans from any latency SLA.
+
+**Alerting:** page on stream drop burn and on worker starvation (schedule-to-start). Ticket on resume regressions.
+
+**Failure signals:** load balancers cutting idle SSE streams, deploys dropping all streams on one pod, history size limits on long agent workflows, and non-deterministic replays after a code change.
+
 ## Interview soundbites
 
 - "The run outlives the connection and the pod. Events go to a log; clients replay from an offset; state lives in checkpoints."

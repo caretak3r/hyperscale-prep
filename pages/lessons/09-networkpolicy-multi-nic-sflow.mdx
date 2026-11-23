@@ -323,6 +323,25 @@ kubectl -n kube-system exec ds/cilium -- hubble observe --since 30m \
 
 **AI/ML angle:** a stolen training pod with Multus `net1` is an **east-west GPU backplane attacker**. Harden eth0 with NetworkPolicy *and* assume the RDMA fabric needs **non-K8s** controls — or you will “pass” a NetworkPolicy audit while NCCL still cross-talks tenants.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+NetworkPolicy and secondary NICs fail **silently**. A missing allow rule shows up as a TTFT spike or an NCCL timeout, and a downed RDMA NIC as a slow training step. The SLIs have to catch the silent version. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Policy-denied legitimate flows:** synthetic probes along every allowed path (`probe_success`) plus Hubble or Cilium drops whose `reason` is a policy deny. A deny on a path that is *supposed* to be allowed is an availability event.
+- **DNS through policy:** `coredns_dns_responses_total{rcode="SERVFAIL"}` and client timeouts after a default-deny rollout. This is the classic footgun.
+- **Secondary NIC / RDMA link state:** node_exporter `node_infiniband_state_id` and `node_infiniband_physical_state_id`, plus `node_infiniband_link_downed_total`.
+- **SR-IOV / RDMA allocatable:** `kube_node_status_allocatable` for your RDMA or SR-IOV resource name. A drop to zero means the device plugin or NIC is gone.
+- **sFlow pipeline freshness:** age of the newest sample per collector (**custom**). An empty flow dashboard isn't proof of zero traffic.
+
+**Example SLOs (examples, not recommendations):** 100% of required paths pass probes after any policy change (gated in CI and canary); 99.9% of RDMA-capable nodes have every NIC up.
+
+**SLA angle:** none externally. The internal contract is "a policy change never breaks an allowed path", enforced as a rollout gate rather than an alert.
+
+**Alerting:** page if allowed-path probes fail right after a policy push, and auto-roll back the push. Ticket on single-node NIC down, with an automated cordon for training pools.
+
+**Failure signals:** egress deny blocking the weight bucket's VPC endpoint, MTU mismatch on the secondary NIC, and routing asymmetry that sends RDMA traffic over the primary interface.
+
 ## Interview soundbites
 
 - **“Default-allow until a policy selects you — empty podSelector selects the whole namespace.”**

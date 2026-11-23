@@ -425,6 +425,30 @@ The observability pipeline sees **everything**: every namespace, every node, eve
 - Config changes (relabel rules, redaction processor config, limits) go through GitOps and review ([L15](/lessons/15-terraform-atlantis-fleet-scale)). Removing a redaction rule is a security change.
 - Kubernetes **audit logs** and the SIEM pipeline are separate from operational logs: separate account, immutable storage, and not deletable by platform admins.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+The observability pipeline **is the SLI system**. If it drops samples, lags or blows its cardinality budget, every SLO above it is wrong or silent. Give the pipeline its own SLOs and watch it from outside. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Freshness:** remote-write lag, `prometheus_remote_storage_highest_timestamp_in_seconds - prometheus_remote_storage_queue_highest_sent_timestamp_seconds`.
+- **Completeness:** `prometheus_remote_storage_samples_failed_total`, `prometheus_target_scrapes_exceeded_sample_limit_total`, and `up == 0` on SLI-critical jobs (engines, router, kube-state-metrics, DCGM).
+- **Cardinality budget:** `prometheus_tsdb_head_series` per Prometheus or tenant against the budget. Most of the growth comes from DCGM pod labels and engine histograms.
+- **Trace and log pipeline:** OTel Collector `otelcol_exporter_send_failed_spans`, `otelcol_exporter_queue_size` ÷ `otelcol_exporter_queue_capacity`, and `otelcol_receiver_refused_spans`.
+- **Rule evaluation health:** `prometheus_rule_evaluation_failures_total` and rule-group duration against the interval. A failing SLO recording rule is a silent SLO.
+
+```promql
+# Remote-write lag per Prometheus (seconds behind)
+max by (instance) (prometheus_remote_storage_highest_timestamp_in_seconds - ignoring(remote_name, url) group_right prometheus_remote_storage_queue_highest_sent_timestamp_seconds)
+```
+
+**Example SLOs (examples, not recommendations):** remote-write lag ≤ 60 s for 99.9% of minutes; ≥ 99.99% of samples delivered; zero SLI-critical targets down for more than 5 min; head series ≤ 80% of the per-cell budget.
+
+**SLA angle:** SLA reports are computed from this pipeline. If it loses data during an incident, you can't prove you met the SLA, or you'll undercount a breach. Keep SLA-critical SLIs on the most reliable path.
+
+**Alerting:** page on SLI-critical scrape loss and on the dead-man's switch. Ticket on cardinality and cost trends.
+
+**Failure signals:** a new label on DCGM or engine metrics multiplying series, remote-write shards maxed out during an incident (exactly when you need the data), and OTel queues dropping spans under load.
+
 ## Interview soundbites
 
 - "Every label is a multiplier. I do series math per node before I pick a backend: DCGM is about 3 million series fleet-wide, node_exporter on 224-CPU hosts is more than that, and inference histograms are the stealth one."

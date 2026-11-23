@@ -367,6 +367,32 @@ This is the section that matters most here. A browser agent combines the three t
 - **Registries:** browser nodes pull only from the in-cell mirror with pull-only credentials held by the kubelet, not the pod; no push credentials exist anywhere in the browser pool.
 - **Inference side:** browsers never call models. The orchestrator calls the inference gateway with a per-agent, audience-bound token ([L52](/lessons/52-mcp-a2a-gateways-fleet-scale)); the gateway enforces per-tenant rate and screenshot size limits (CUA images are a prefill DoS vector); inference pods have no internet egress and accept traffic only from the gateway ([L14](/lessons/14-ml-inference-training-deploy-hardening)). Browser and desktop pools never share nodes with inference pods that cache weights on local NVMe.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Browser and computer-use fleets have **heavy, stateful, flaky sessions**. Chromium crashes, sites block you, and desktops take seconds to boot. Measure session success separately from site-caused failures, or the SLO turns into a report on the internet's reliability. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Session start latency:** request to browser or desktop ready to drive (**custom**, from the pool manager). Warm-pool hits are pod Ready, plus CDP or VNC reachability.
+- **Platform-caused session failures:** Chromium crashes (OOMKilled, `kube_pod_container_status_last_terminated_reason`), `/dev/shm` exhaustion and lost CDP connections ÷ sessions. Count site-side failures (captcha, 403, bot detection) in a separate bucket, not against the platform SLO.
+- **Egress proxy health:** proxy availability and latency (proxy-specific metrics). Blocked-destination counts by policy rule (SSRF to metadata or RFC 1918 ranges) are security SLIs.
+- **Credential vault access:** session-credential fetch success and latency (**custom**).
+
+```promql
+# Browser pods killed for memory (Chromium tabs grow without bound)
+sum by (namespace) (
+  increase(kube_pod_container_status_restarts_total{container="browser"}[1h])
+  and on (namespace, pod, container) kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1
+)
+```
+
+**Example SLOs (examples, not recommendations):** 99% of sessions ready ≤ 3 s (warm); platform-caused session failure ≤ 0.5%; zero successful requests to metadata IPs from browser pods.
+
+**SLA angle:** promise platform availability and session start only. Never promise task success on third-party sites, and exclude site-side failures explicitly in the SLA definition.
+
+**Alerting:** page on proxy outages and on warm-pool exhaustion. Ticket on crash-rate regressions after a Chromium bump. Send SSRF block spikes to security.
+
+**Failure signals:** a Chromium update raising memory per tab, proxy IP reputation getting blocked, CDP websocket timeouts through the mesh, and VNC desktops leaking on abandoned sessions.
+
 ## Interview soundbites
 
 - "A browser agent is a confused deputy with a cookie jar. I give it the least network, the least identity, and the shortest-lived session that can finish the task."

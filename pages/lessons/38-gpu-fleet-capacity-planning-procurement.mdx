@@ -381,6 +381,29 @@ sum by (cluster_queue) (kueue_pending_workloads{status="inadmissible"})
 | **Checkpoint residency** | Training checkpoints shipped to a second cloud in another jurisdiction | Data-residency check and encryption with your keys before any transfer; checkpoints never served directly ([L14](/lessons/14-ml-inference-training-deploy-hardening)) |
 | **Same deploy floor** | Capacity rush deploys with `privileged: true` or hostPath model mounts | PSS restricted, admission and NetworkPolicy identical to existing clusters ([L11](/lessons/11-cluster-security-pss-admission-rbac)) |
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Capacity planning starts from SLOs. **Convert demand into GPUs at the TTFT/ITL target, not at peak throughput**, then add named headroom for failover, rollouts and RMA. The healthy-GPU reserve becomes a fleet SLO. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Capacity at SLO:** sustainable tokens/s per GPU at which p99 TTFT and ITL stay inside the SLO, measured by load tests (**custom**, per model, engine and SKU). Every forecast multiplies by this number.
+- **Demand vs capacity at SLO:** `rate(vllm:generation_tokens_total[1h])` and `rate(vllm:prompt_tokens_total[1h])` per model against that capacity.
+- **Reserve SLI:** healthy, allocatable GPUs ÷ planned reserve per pool (kube-state-metrics GPU allocatable on Ready nodes).
+- **Training calendar SLI:** reserved blocks delivered on the planned date ÷ blocks planned (**custom**, from the capacity ledger).
+
+```promql
+# Token demand per model (output tokens/s), the numerator of every capacity forecast
+sum by (model_name) (rate(vllm:generation_tokens_total[1h]))
+```
+
+**Example SLOs (examples, not recommendations):** healthy GPUs ≥ reserve 99.5% of the time; forecast error ≤ 15% at a 90-day horizon; no tier-1 model running above 80% of its capacity-at-SLO at weekly peak.
+
+**SLA angle:** sales and SLAs commit capacity ("dedicated throughput units", "provisioned TPM"). Those commitments must be booked in the ledger at capacity-at-SLO, or the SLA is unfunded.
+
+**Alerting:** ticket when demand trends toward 80% of capacity-at-SLO. Page only if the reserve is breached in a way that removes failover capacity.
+
+**Failure signals:** planning on average rather than p99, speculative-decoding or quantisation changes moving capacity-at-SLO without updating the ledger, and lead-time risk ignored until a block slips.
+
 ## Interview soundbites
 
 - "I forecast inference in peak tokens per second per model and tier, and I convert it with goodput I measured at the SLO, not the benchmark's max throughput."

@@ -195,6 +195,30 @@ kubectl --context fleet-mgmt get clusterrolebindings -o wide
 
 **AI/ML fleets:** treat model-weight buckets, checkpoint stores, and GPU node pools as high-value tenancy. Sandbox training cells must not share pull credentials or registry write paths with prod inference cells — isolate weights/checkpoints/images the same way you isolate blast radius.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+At fleet scale the unit of reliability is the **cell**, not the cluster or the node. Set SLOs per cell, and treat "cells meeting their SLO" as the fleet-level SLI. A thousand dead nodes a day is normal and should never page. See the [SRE playbook](/sre-slis-slos-slas) for the full catalog.
+
+**SLIs an SRE owns here:**
+- **Per-cell API availability and latency:** `apiserver_request_sli_duration_seconds` and `apiserver_request_total{code=~"5.."}`, scraped and evaluated inside each cell.
+- **Node-ready ratio per cell:** `kube_node_status_condition{condition="Ready",status="true"}` ÷ all nodes. This is a capacity SLI, not a page by itself.
+- **Fleet SLI:** the share of cells whose burn-rate rules are quiet, from recorded per-cell ratios in the global tier.
+
+```promql
+# Share of cells currently within their API availability SLO (example: 99.95%)
+count(cell:apiserver_availability:ratio_rate30m >= 0.9995) / count(cell:apiserver_availability:ratio_rate30m)
+```
+
+`cell:apiserver_availability:ratio_rate30m` is a recording rule you write. It isn't an upstream metric.
+
+**Example SLOs (examples, not recommendations):** 99.95% API availability per cell over 28 days; at least 99% of cells within SLO at any time.
+
+**SLA angle:** customers buy a region or a global endpoint, not a cell. Write the SLA at the level they consume, and keep per-cell SLOs internal, so one sick cell drains and doesn't trigger credits.
+
+**Alerting:** a per-cell burn pages the cell owner. Several cells burning **at once** almost always means a global change (an image, a policy, a control-plane version), so the right move is to freeze and roll back, not to debug each cell.
+
+**Failure signals:** correlated burn across cells, node-ready ratio falling in one AZ, and cells that stop reporting (dead-man's switch).
+
 ## Interview soundbites (steal these)
 
 1. **“Cluster = blast-radius boundary.”** I size cells so a control-plane or CNI incident doesn’t take the company down.

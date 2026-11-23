@@ -449,6 +449,31 @@ Use batched webhook or log backends (`--audit-log-maxsize`, `--audit-webhook-bat
 - **Network isolation.** Control-plane nodes and etcd in their own subnet. Pods cannot reach etcd at all, and reach the apiserver only through the service VIP with NetworkPolicy limiting which namespaces may. Block pod access to cloud metadata endpoints so a pod can't steal the node's credentials. Kubelet API (10250) not reachable from pods.
 - **Provenance of the control plane itself.** Control-plane images signed and pinned by digest, static pod manifests managed by config management, and changes to FlowSchemas, webhooks and RBAC go through GitOps review, not kubectl.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+GPU nodes carry a heavy control-plane load: DaemonSets, device plugins, DRA and gang controllers. The SLIs are the upstream API SLOs **plus the load and fairness signals that predict them**, so you see a watch storm before it breaks scheduling. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **API latency SLI:** `apiserver_request_sli_duration_seconds` by verb and scope (upstream SLO definitions, see [L2](/lessons/02-k8s-control-plane)).
+- **APF:** `apiserver_flowcontrol_rejected_requests_total` and `apiserver_flowcontrol_request_wait_duration_seconds` by `priority_level` and `flow_schema`. Find who is being throttled.
+- **Watch load:** `apiserver_longrunning_requests` and `apiserver_watch_events_total`. Spikes after an apiserver restart are relist storms.
+- **Object counts:** `apiserver_storage_objects` by resource. Events, leases and ResourceClaims grow with GPU-node count.
+- **Controller health:** `workqueue_depth` and `workqueue_queue_duration_seconds` for scheduler, DRA and Kueue controllers.
+- **etcd:** `etcd_disk_wal_fsync_duration_seconds` and `etcd_disk_backend_commit_duration_seconds`.
+
+```promql
+# Who is APF rejecting?
+sum by (priority_level, flow_schema, reason) (rate(apiserver_flowcontrol_rejected_requests_total[5m])) > 0
+```
+
+**Example SLOs (examples, not recommendations):** the upstream API latency SLOs hold at 10k nodes; zero APF rejections in `system`/`node-high`; p99 controller queue duration ≤ 5 s for scheduling-critical controllers.
+
+**SLA angle:** managed control-plane SLAs don't cover load you generate. A DaemonSet that LISTs pods cluster-wide from 10k nodes is your outage, not the provider's.
+
+**Alerting:** page on API latency burn and on rejections in critical priority levels. Ticket on object-count growth and watch-count trends.
+
+**Failure signals:** relist storms after an apiserver restart, webhooks in the hot path of pod creation, unbounded Events from crash-looping GPU pods, and lease churn from thousands of node heartbeats.
+
 ## Interview soundbites
 
 - "10,000 GPU nodes is 1,000 Lease writes a second before a single job runs. I start every control-plane design with that arithmetic."

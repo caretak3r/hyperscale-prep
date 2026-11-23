@@ -353,6 +353,29 @@ spec:
             value: ["serve-chat", "serve-batch", "staging-*"]
 ```
 
+## SRE focus: SLIs, SLOs & SLAs
+
+A chaos experiment is an **SLO hypothesis**: "during X, the TTFT and availability SLIs stay inside budget, or the abort condition fires". If you can't name the SLI and the abort threshold, you're not running an experiment. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Steady-state SLIs during the drill:** router availability (`llm_d_epp_request_outcome_total`) and TTFT (`llm_d_epp_request_ttft_seconds` or `vllm:time_to_first_token_seconds`), plus outside-in `probe_success`.
+- **Budget spent per drill:** error-budget minutes consumed, computed from the same recording rules as production. Drills must fit inside the budget policy.
+- **Abort latency:** time from the abort condition firing to the fault being removed (AWS FIS stop conditions, Chaos Mesh pause). This is an SLO for the safety mechanism.
+- **Recovery SLIs:** time back to steady state after the fault ends, including hydrate storms on recovery (registry egress and cold-start time).
+
+```promql
+# Abort condition sketch: router availability over 5 min drops below 99.5% (example threshold)
+(1 - sum(rate(llm_d_epp_request_outcome_total{outcome="failed"}[5m])) / sum(rate(llm_d_epp_request_outcome_total[5m]))) < 0.995
+```
+
+**Example SLOs (examples, not recommendations):** each game day spends ≤ 10% of the monthly budget; abort completes within 2 min; steady state restored within 15 min of fault removal.
+
+**SLA angle:** run drills that could touch customers inside **announced maintenance windows** (a common SLA exclusion) until they're proven safe, then outside them. That shift is the point of the drill ladder.
+
+**Alerting:** keep production alerts live during drills. A drill that silences paging tests nothing. Tag drill traffic so postmortems can separate drill burn from real burn.
+
+**Failure signals:** abort conditions wired to a metric that the fault itself breaks (a scrape path through the blackholed region), recovery hydrate storms causing a second incident, and failback flapping.
+
 ## Interview soundbites
 
 - "DR I haven't drilled is a hypothesis. I write the steady state and the RTO budget down before anyone injects anything."

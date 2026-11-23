@@ -654,6 +654,29 @@ Break-glass rules: a **two-person** request (IC + security lead for SEV1), a bin
 
 Freeze CatalogBundle / toolset promotions for the affected product. Downgrade the tenant to `read`-class tools. Preserve sessions and gateway + proxy audit. Identify the injecting content by hash (doc, URL, ticket ID) and block it at retrieval. Run registered compensations for any completed writes. Loop in privacy/legal if customer data moved. Sandboxes and their identities have no route to weights, checkpoints, golden sets or catalog write paths ([L34](/lessons/34-agent-tool-sandboxing-egress-policy)), so the blast radius is bounded *before* the incident starts.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Incident response is where SLOs pay off. **Pages come from burn, severity comes from the error-budget impact, and postmortems are prioritised by budget spent.** The IR process also has SLIs of its own. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Time to detect, acknowledge and mitigate:** from the first SLI breach to page, ack and mitigation, per SEV (**custom**, from the incident tool).
+- **Page actionability:** pages that led to an action ÷ all pages per week (**custom**, from on-call review). Below about 50%, the alerting is creating incidents.
+- **Alert-delivery health:** `alertmanager_notifications_failed_total` and `alertmanager_notification_latency_seconds` per integration. A failed page is a silent SEV.
+- **Budget impact per incident:** error-budget minutes consumed, from the SLO recording rules over the incident window. This is how you set SEV and postmortem priority.
+
+```promql
+# Paging integrations failing to deliver
+sum by (integration) (rate(alertmanager_notifications_failed_total[5m])) > 0
+```
+
+**Example SLOs (examples, not recommendations):** SEV1 acknowledged within 5 min for 99% of pages; mitigation (drain, rollback or failover) within 30 min at p90; page actionability ≥ 70%.
+
+**SLA angle:** SLAs often include **incident communication** terms (status page update within N minutes, a root-cause report within N days). Those are SLOs on the IR process, so track them.
+
+**Alerting:** watch the watchers. Use a dead-man's switch to an external service, page delivery-failure alerts through a second channel, and inhibit downstream symptom alerts during a declared incident.
+
+**Failure signals:** 300 pages in four minutes from one root cause (no grouping by blast radius), runbooks whose first lever is "investigate", and postmortem action items with no owner or date.
+
 ## Interview soundbites
 
 - "Severity on an ML platform is four-dimensional: users, GPU-hours, model quality and security. A hung 16K-GPU job is a SEV2 with zero users affected."

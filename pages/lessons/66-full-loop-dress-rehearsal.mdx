@@ -346,6 +346,23 @@ Fill this from your recordings. Each row should read as **one policy, four views
 - **The line to have ready:** "I can't go into my last employer's specifics, but here's how I'd design it for you." Then actually design it.
 - **The whiteboard counts:** don't draw a former employer's real network layout. Draw the generic L62 shape.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+In the dress rehearsal, SLOs are a **cross-round consistency test**. The same SLO numbers, SLIs and alert windows should come up in the design, troubleshooting, security and behavioral rounds, and the debrief should catch any drift. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLO checks to run in the debrief:**
+- **One value per claim:** add your SLO examples to the claims ledger. Inference availability, TTFT target and bucket, burn-rate windows (14.4×/6× page on 1h/5m and 6h/30m), SLA against SLO gap. Any two different values across rounds is a contradiction trap.
+- **Metric names said aloud:** were they real and current? `vllm:inter_token_latency_seconds` (not "TPOT gauge"), `DCGM_FI_DEV_XID_ERRORS` (renamed `DCGM_FI_DEV_XID_ERROR` in dcgm-exporter 4.9.0), `kueue_admission_wait_time_seconds`.
+- **Examples marked as examples:** did you say "starting point, validated against baselines", or present targets as universal truths?
+- **Vantage point and good event:** did every SLO you named come with where it's measured and what counts as good?
+
+**Flashcards to add (example):**
+- "Fast-burn page for 99.9%?" → 14.4× over 1h AND 5m (2% of the 30-day budget in 1 h).
+- "Why is the SLA looser than the SLO?" → credits are money, measurement differs, and you need a buffer to react.
+- "TTFT bucket for a 1 s target in vLLM?" → `le="1.0"`, which exists in the histogram buckets.
+
+**Red flags in the recording:** SLO numbers that change between rounds, invented metric names, and no mention of error-budget policy in the operations phase.
+
 ## Interview soundbites
 
 For the loop itself:

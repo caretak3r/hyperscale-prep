@@ -576,6 +576,30 @@ An OBJ tier with **no** `scheme` key was also denied (that's the default-`http` 
 - Images by digest with provenance (cosign + SLSA, L14/L27). The admission pass in this lesson's test used `vllm/vllm-openai:latest` on purpose to show that the KV VAP doesn't cover image policy. Your image-verification policy must.
 - Patch floors for this stack (as of 2026-11-21): vLLM ≥ 0.31.0 for the cache-key and salt advisories above, LMCache ≥ 0.5.7. No published GHSA for NIXL, Dynamo, llm-d-router or llm-d-kv-cache as of today (checked via each repo's advisory API). That doesn't mean their ZMQ/NIXL endpoints are authenticated, so fence them anyway.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+KV-cache tiering makes **hit rate a capacity SLI** that feeds TTFT. Measure it token-weighted per tier, write the SLO in TTFT terms, and watch the router's event plane, because a stale index sends requests to cold replicas. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **GPU-tier hit ratio (tokens):** `vllm:prefix_cache_hits_total` ÷ `vllm:prefix_cache_queries_total`.
+- **External-tier hit ratio (tokens):** `vllm:external_prefix_cache_hits_total` ÷ `vllm:external_prefix_cache_queries_total` (KV connector tiers). On LMCache multiprocess mode, use `lmcache_mp_lookup_hit_tokens_total` ÷ `lmcache_mp_lookup_prompt_tokens_total` (the names used in LMCache's Grafana dashboard).
+- **Router index health:** `llm_d_epp_kv_cache_index_lookup_hits_total` ÷ `llm_d_epp_kv_cache_index_lookup_requests_total`, plus event-plane errors `llm_d_epp_kv_cache_events_zmq_errors_total` and `llm_d_epp_kv_cache_events_live_only_subscribers` (> 0 means an index running without snapshot or replay). The old `kvcache_index_*` names are no longer emitted.
+- **The outcome:** TTFT for follow-up turns (`vllm:time_to_first_token_seconds` or the router view) is the SLO. Hit ratios are the levers.
+
+```promql
+# Token-weighted hit ratio, GPU tier vs connector tiers, per model
+sum by (model_name) (rate(vllm:prefix_cache_hits_total[10m])) / sum by (model_name) (rate(vllm:prefix_cache_queries_total[10m]))
+sum by (model_name) (rate(vllm:external_prefix_cache_hits_total[10m])) / sum by (model_name) (rate(vllm:external_prefix_cache_queries_total[10m]))
+```
+
+**Example SLOs (examples, not recommendations):** p90 follow-up-turn TTFT ≤ 400 ms (the lesson's example), with the hit targets derived from it. Router event lag stays within one snapshot interval. Zero live-only subscribers for more than 10 min.
+
+**SLA angle:** never sell hit rate. It depends on customer traffic. Sell the TTFT that a given hit rate makes possible, and exclude prompt patterns that defeat caching (unique prefixes) from latency SLAs only if they're stated up front.
+
+**Alerting:** page on follow-up TTFT burn. Ticket on hit-ratio drops per tier (capacity or eviction-policy regression) and on event-plane errors.
+
+**Failure signals:** hash-seed or block-size mismatches between engine and router (so 0% routed hits), NVMe tier GDS falling back to compat mode, per-tenant salts making shared prefixes uncacheable, and evictions under backpressure.
+
 ## Interview soundbites
 
 - "KV for Qwen3-32B is 256 KiB per token, so a 32K prefix is 8.6 GB. Recompute is about 1.6 s on a GB200 superchip. Grace memory reloads it in ~30 ms, NVMe in ~450 ms, plain S3 in ~1.7 s. The break-even is ~5 GB/s per replica, and any tier slower than that gets turned off."

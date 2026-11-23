@@ -312,6 +312,25 @@ Bootstrap is the moment a node goes from "untrusted box from a shipping dock" to
 # 7. Record time per stage and failure reason; quarantine queue reviewed daily
 ```
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Zero-touch onboarding is a pipeline, and its SLOs are **throughput and first-time-right**: racks from power-on to schedulable without a human. Inspection is where bad hardware gets caught cheaply, so its escape rate is an SLI too. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Rack lead time:** power-on to all nodes Ready and schedulable, p50 and p95 (**custom**, from DCIM, provisioning and Node creation timestamps).
+- **First-time-right rate:** nodes that join without manual intervention ÷ nodes attempted (**custom**, from Ironic, Metal3 or your provisioner states).
+- **Boot-path health:** PXE/iPXE and TFTP/HTTP image-serving success, DHCP lease failures, and BMC (Redfish) call errors and latency (**custom** exporter or provisioner metrics).
+- **Join time:** `kubelet_node_startup_duration_seconds` and Node Ready transition time.
+- **Inspection escape rate:** nodes that pass inspection but fail burn-in (**custom**).
+
+**Example SLOs (examples, not recommendations):** 95% of racks schedulable within 48 h of power-on; first-time-right ≥ 90%; Redfish operations succeed ≥ 99% per attempt with retries counted separately.
+
+**SLA angle:** vendor delivery and installation SLAs, and your internal capacity promise to teams ("new SU available on date X"), depend on this pipeline. Measure it like a product.
+
+**Alerting:** ticket on lead-time burn. Page if the bootstrap credential path (join tokens, CA) fails fleet-wide, because that stops every new node and every reprovision.
+
+**Failure signals:** TFTP saturation when a whole row PXE-boots, BMC firmware with flaky Redfish, power sequencing tripping breakers, and leaked or expired bootstrap tokens.
+
 ## Interview soundbites
 
 - "DCIM is the source of truth; provisioning compares against it and quarantines on mismatch. A crossed rail cable caught at inspection costs minutes; caught in production it costs weeks of slow NCCL."

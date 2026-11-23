@@ -427,6 +427,32 @@ spec:
 
 **Punchline:** Fair-share and gang admission are **capacity** features. **RBAC splits, signed images (including controllers), WI/IRSA, NetPol, and whole-gang preemption** are what stop a Cohort from becoming a multi-tenant weight breach.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Queueing systems have two customers with different SLOs. **Training** cares about admission wait, fairness and not being preempted without warning. **Inference** cares about never queueing behind a gang. Kueue exports both sides. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Admission wait per ClusterQueue:** `kueue_admission_wait_time_seconds` (created or requeued until admitted), and `kueue_admitted_until_ready_wait_time_seconds` with `waitForPodsReady` on.
+- **Backlog:** `kueue_pending_workloads{status="active"|"inadmissible"}`. Inadmissible workloads won't retry until something changes, so they need a human or a quota fix.
+- **Preemption and eviction:** `kueue_preempted_workloads_total{reason}` and `kueue_evicted_workloads_total{reason}` (`Preempted`, `PodsReadyTimeout` and others).
+- **Quota use vs nominal:** `kueue_cluster_queue_resource_usage` ÷ `kueue_cluster_queue_nominal_quota`. Some per-resource series only appear when you enable ClusterQueue resource metrics.
+- **Volcano equivalent:** `e2e_job_scheduling_duration` and `unschedule_task_count`.
+
+```promql
+# p95 admission wait per ClusterQueue
+histogram_quantile(0.95, sum by (le, cluster_queue) (rate(kueue_admission_wait_time_seconds_bucket[1h])))
+# Preemptions by reason (fairness/reclaim health)
+sum by (preempting_cluster_queue, reason) (increase(kueue_preempted_workloads_total[1d]))
+```
+
+**Example SLOs (examples, not recommendations):** reserved-quota training jobs are admitted within 15 min at p95; burst jobs within 4 h; zero inference workloads waiting behind training gangs, enforced by separate queues rather than measured after the fact.
+
+**SLA angle:** internal quota contracts ("team X gets 512 H100s nominal, reclaimable within 10 min") are SLAs. Measure reclaim latency per cohort.
+
+**Alerting:** ticket on admission-wait burn. Page only when reserved quota can't be reclaimed, because that breaks a contract.
+
+**Failure signals:** a gang holding partial GPUs without all-or-nothing admission, `PodsReadyTimeout` evictions from slow image pulls, and fair-share weights that let one tenant keep borrowed capacity for days.
+
 ## Interview soundbites
 
 - **“Job parallelism is not a gang — partial place is how you waste a rack.”**

@@ -372,6 +372,29 @@ spec:
 
 **Punchline:** GPUDirect and NVLink are **performance** features. **IAM, admission, NetPol, and signed images** are what stop a topology node from becoming a weight exfil or DMA trampoline — fabric labels alone are not a security boundary.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Topology problems rarely make anything "fail". They make a training step **5–10× slower** or add milliseconds to every MoE all-to-all. So the SLIs here are **fabric-performance SLIs against a baseline**, measured by canaries, not up/down checks. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **NCCL bus bandwidth vs baseline:** nccl-tests `all_reduce_perf` busBW per node pair or rail, from scheduled canary Jobs (**custom** gauge, for example `nccl_canary_busbw_gbps`). AlgBW alone hides rail problems.
+- **NVLink throughput and errors:** `DCGM_FI_DEV_NVLINK_BANDWIDTH_TOTAL` (4.8.4 name), and NVLink CRC or recovery counters if you enable them in the exporter CSV.
+- **IB/RoCE port health:** `node_infiniband_symbol_error_total`, `node_infiniband_link_error_recovery_total`, `node_infiniband_link_downed_total` and `node_infiniband_port_constraint_errors_received_total`.
+- **Placement correctness:** share of gangs whose ranks sit inside one rack or block as required (**custom** check on node topology labels). A spread gang is a silent SLO miss.
+
+```promql
+# IB symbol-error rate per port (non-zero and rising = bad cable/optic; feeds auto-cordon)
+sum by (instance, device, port) (rate(node_infiniband_symbol_error_total[10m])) > 0
+```
+
+**Example SLOs (examples, not recommendations):** 99% of nightly NCCL canaries reach at least 90% of the SKU's baseline busBW; under 0.5% of RDMA ports with rising error counters at any time.
+
+**SLA angle:** an SLA or SKU promise like "HGX-class NVLink" has to be backed by `nvidia-smi topo` and canary results. Don't sell PCIe-fallback nodes as NVSwitch nodes.
+
+**Alerting:** auto-cordon and ticket per node or port. Page when canary busBW drops across a whole rail or spine, which means a fabric event rather than one bad node.
+
+**Failure signals:** the wrong `NCCL_IB_HCA`, GPUDirect RDMA off after a driver bump, PFC storms on RoCE, and ranks rescheduled across racks after a node failure.
+
 ## Interview soundbites
 
 - **“GPUs without topology are half a capacity plan.”**

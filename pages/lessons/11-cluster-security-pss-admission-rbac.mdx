@@ -312,6 +312,30 @@ kubectl auth can-i create pods --as=system:serviceaccount:model-serving:inferenc
 
 **AI/ML punchline:** Restricted PSS + narrow SA + WI/IRSA on the weight bucket beats “the GPU node role can read prod checkpoints.” Mesh mTLS does not replace unsigned image admission.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Admission webhooks and policies sit **in the availability path of every deploy and scale-up**. A fail-closed webhook that's down is an outage of the control plane. Security controls need their own SLOs. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Webhook latency:** `apiserver_admission_webhook_admission_duration_seconds` by `name`.
+- **Webhook errors and fail-open:** `apiserver_admission_webhook_rejection_count{error_type="calling_webhook_error"}` (the webhook was unreachable, not a policy deny) and `apiserver_admission_webhook_fail_open_count`. A rising fail-open count is a **security** SLO violation.
+- **In-process policy:** `apiserver_validating_admission_policy_check_total` by `policy` and `enforcement_action`, and `apiserver_validating_admission_policy_check_duration_seconds`.
+- **Audit delivery:** `apiserver_audit_error_total` by `plugin`. Lost audit events mean lost evidence.
+- **Policy engines:** Gatekeeper `gatekeeper_validation_request_duration_seconds`, or Kyverno `kyverno_admission_review_duration_seconds`.
+
+```promql
+# Admission calls that failed because the webhook itself errored, per webhook
+sum by (name) (rate(apiserver_admission_webhook_rejection_count{error_type="calling_webhook_error"}[5m]))
+```
+
+**Example SLOs (examples, not recommendations):** p99 webhook latency ≤ 100 ms; under 0.01% of admission calls fail from webhook errors; **zero** fail-open events on security-critical webhooks (a zero-budget security SLO); 100% of audit events delivered.
+
+**SLA angle:** none externally, but this is where compliance commitments live ("all changes audited"). Treat audit delivery as a contractual SLI.
+
+**Alerting:** page on webhook-error burn and on any fail-open from a security webhook. Ticket on latency creep.
+
+**Failure signals:** a webhook whose `namespaceSelector` includes its own namespace (deadlock on restart), certificate expiry on the webhook service, and a policy-engine OOM during a large rollout.
+
 ## Interview soundbites
 
 - **“PSS is namespace labels: Privileged / Baseline / Restricted with enforce, audit, warn — PSP is gone.”**

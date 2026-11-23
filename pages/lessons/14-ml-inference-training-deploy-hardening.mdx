@@ -517,6 +517,31 @@ kubectl auth can-i create pods -n model-serving \
 
 **Punchline:** Signed image + signed weight still fail open if the Deployment is privileged, shares an SA with training, can egress to the public internet, or runs on a time-sliced GPU next to a hostile tenant. **L14 closes the deploy plane.**
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Deployment hardening (admission floors, default-deny egress, secret sync) adds **startup dependencies**. Each one needs an SLO, or the security floor becomes the most common cause of failed rollouts. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Admission denials on model namespaces:** `apiserver_validating_admission_policy_check_total{enforcement_action="deny"}` by `policy`. Expected denials are fine; a sudden spike after a release means the policy and the chart drifted.
+- **Secret sync health:** External Secrets `externalsecret_status_condition` and `externalsecret_sync_calls_error`. A failed sync shows up later as `CreateContainerConfigError`.
+- **Egress denies on serving pods:** policy-drop counters (Cilium or Hubble) for model namespaces. Any deny toward the weights endpoint is a bug.
+- **GPU pool isolation:** serving pods scheduled outside their pool (**custom** check on node labels). This is an isolation SLO, not a performance one.
+
+```promql
+# Policy denials per policy in the last hour (spot regressions after a chart change)
+sum by (policy) (increase(apiserver_validating_admission_policy_check_total{enforcement_action="deny"}[1h]))
+# ExternalSecrets not Ready
+sum by (namespace) (externalsecret_status_condition{condition="Ready", status="False"})
+```
+
+**Example SLOs (examples, not recommendations):** 99% of production rollouts pass admission on the first try; 99.9% of secret syncs succeed within the refresh interval; zero serving pods on non-serving pools.
+
+**SLA angle:** isolation and secret-handling commitments ("tenant workloads never share a GPU") are often contract terms for enterprise inference. Back them with these SLIs.
+
+**Alerting:** page when secret sync failures block a tier-1 deployment. Ticket on admission-denial spikes, which belong to the policy owner.
+
+**Failure signals:** a Hugging Face token rotated without updating the secret store, a VAP added in `Deny` mode without an audit period, and a NetworkPolicy that blocks the DCGM or metrics scrape so that the SLI itself goes dark.
+
 ## Interview soundbites
 
 - **“Train and serve are different namespaces, different SAs, different GPU pools — sharing any one of those is how exfil happens.”**

@@ -289,6 +289,29 @@ kubectl auth can-i get secrets -n model-serving \
 
 **AI/ML punchline:** A signed serving image pulling an **unsigned, world-readable checkpoint** is still a supply-chain fail. L12 closes the **image** half; L13 closes the **weight** half.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Supply-chain controls change two SLOs: **how fast pods start** (pulls and signature checks) and **how fast you can patch**. Both need targets, or hardening slowly eats the availability budget. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Image pull duration and failures:** `kubelet_image_pull_duration_seconds` (alpha), and `kube_pod_container_status_waiting_reason{reason=~"ErrImagePull|ImagePullBackOff"}`.
+- **Signature-verification latency at admission:** Kyverno `kyverno_admission_review_duration_seconds` or your verifier webhook's latency (`apiserver_admission_webhook_admission_duration_seconds`).
+- **Patch latency:** time from a critical CVE advisory to N% of nodes or images remediated (**custom**, from scanner and inventory data).
+- **Registry and mirror availability:** pull success from each mirror, probed (`probe_success`).
+
+```promql
+# Pods stuck on image pulls, per namespace
+sum by (namespace) (kube_pod_container_status_waiting_reason{reason=~"ErrImagePull|ImagePullBackOff"})
+```
+
+**Example SLOs (examples, not recommendations):** p95 image pull ≤ 30 s from the in-cell mirror; 99.9% of pulls succeed; 95% of nodes patched within 7 days of a critical runtime CVE (for example the runc and containerd fixes in [L68](/lessons/68-k8s-136-138-gpu-ai-platforms)).
+
+**SLA angle:** security SLAs to customers ("critical vulnerabilities remediated within N days") are real contract terms. Measure them from inventory, not from tickets closed.
+
+**Alerting:** page when pull failures block scale-up of a tier-1 service. Ticket on patch-latency burn.
+
+**Failure signals:** a signature check that calls an external transparency log on every pull and times out, mirrors missing new digests after a release, and node images drifting from the hardened baseline.
+
 ## Interview soundbites
 
 - **“Tags move; digests don’t — I deploy `@sha256` and admit-time verifyDigest.”**

@@ -678,6 +678,30 @@ Notes on these policies:
 - **Network isolation:** NVLink is the fastest path between tenants, so keep tenants out of each other's partitions. Separate scale-out (CX-7/CX-8) traffic by tenant with partition keys/VRFs ([L40](/lessons/40-infiniband-roce-fabric-operations)). OOB is its own network.
 - **Admission/RBAC:** the VAPs above, Pod Security `restricted` in tenant namespaces, no `hostNetwork`/`hostPath`, ComputeDomain create/delete only in your own namespace.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+On NVL72, **the rack is the failure domain**. One bad tray or NVLink switch tray can take down a whole ComputeDomain. SLIs have to roll up per rack and partition, not per GPU. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Rack capacity:** schedulable healthy trays per rack and per partition, computed from `kube_node_spec_unschedulable`, node taints and GPU allocatable (`kube_node_status_allocatable{resource="nvidia_com_gpu"}`) grouped by the rack or clique label. Partial racks reduce the largest job you can place.
+- **Fabric health:** `DCGM_FI_DEV_FABRIC_HEALTH_SUMMARY` and Blackwell NVLink recovery counters `DCGM_FI_DEV_NVLINK_RECOVERY_FAILED_TOTAL` / `DCGM_FI_DEV_NVLINK_RECOVERY_EVENT_TOTAL`. Both are opt-in fields in the dcgm-exporter 4.8.4 CSV. Watch rates, not raw counts.
+- **ComputeDomain readiness:** ComputeDomains with `.status.status == Ready` ÷ requested, plus time from creation to Ready (**custom**, via kube-state-metrics CustomResourceState or a small exporter). A job can't start until its CD and IMEX are up.
+- **Cooling and power:** leak, inlet and outlet temperatures, and power-shelf state from the rack BMC or Redfish (**vendor-specific**, custom names), plus `DCGM_FI_DEV_GPU_TEMP` and `DCGM_FI_DEV_MEMORY_TEMP` per GPU.
+
+```promql
+# Nodes with failed NVLink recoveries in the last hour. Roll up to rack by joining on your node label
+# (via kube_node_labels{label_<rack-label>}; the label must be in ksm's --metric-labels-allowlist)
+sum by (Hostname) (increase(DCGM_FI_DEV_NVLINK_RECOVERY_FAILED_TOTAL[1h])) > 0
+```
+
+**Example SLOs (examples, not recommendations):** ≥ 16 of 18 trays healthy in 99% of racks; ComputeDomain ready ≤ 2 min p95; burn-in passed before 100% of trays return to service.
+
+**SLA angle:** capacity SLAs for rack-scale customers are per partition or rack ("an NVL72 domain with N healthy trays"), not per GPU. Define partial-rack credits explicitly.
+
+**Alerting:** page facilities on leak or coolant alarms immediately (safety, not budget). Page on fabric failures that break running domains. Ticket on tray RMA backlog.
+
+**Failure signals:** an NVLink switch tray failure isolating a partition, IMEX daemons failing to form a domain after node reboots, cooling derates throttling a whole rack, and clique labels that disagree with the physical topology.
+
 ## Interview soundbites
 
 1. "On NVL72 the failure domain isn't the node, it's the NVLink domain. A tray failure costs 4 GPUs; a switch-tray failure costs every GPU a ninth of its bandwidth."

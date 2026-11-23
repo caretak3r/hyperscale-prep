@@ -307,6 +307,22 @@ Score 1 (no hire) to 4 (strong hire) per dimension; weights sum to 100.
 
 Pass: 70 or more, no dimension at 1, **Safe fix at 3 or more** (a candidate who disables verification fails regardless of total).
 
+## SRE focus: SLIs, SLOs & SLAs
+
+In a troubleshooting mock, **start from the SLO, not the dashboard**. Ask which SLO is burning, how fast, for whom, and since when. Then narrow with cause SLIs. Interviewers score structure. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLO questions to expect, and strong answers:**
+- **"Where do you look first?"** The burning SLO and its burn rate (fast or slow), scoped by tenant, model and cell. Is it one cell or global? Did it start at a deploy (`argocd_app_sync_total`, `rollout_phase`) or a capacity event?
+- **"TTFT p99 is up and errors are flat. What next?"** Split TTFT into queue (`vllm:request_queue_time_seconds`) and prefill (`vllm:request_prefill_time_seconds`), then check `vllm:kv_cache_usage_perc`, `vllm:num_preemptions` and prefix-cache hit ratio. Check KV transfer (`vllm:nixl_xfer_time_seconds`) if disaggregated.
+- **"Training goodput dropped."** Look at restarts (`jobset_failed_total`, Kueue evictions `kueue_evicted_workloads_total` by `reason`), Xid and NVLink errors on a common node or rack, and checkpoint age.
+- **"How do you know it's fixed?"** The burn rate returns below 1×, the fast-window alert resolves, and you state how much budget was spent and whether the error-budget policy now applies.
+
+**Mitigate before root cause:** shed or route around the bad cell, roll back the last change, and drain the bad node or rack. Then investigate.
+
+**Red flags interviewers score down:** reading every dashboard without a hypothesis, restarting things before capturing evidence, and declaring victory on one metric while the SLI is still burning.
+
+**Example SLO framing (examples, not recommendations):** "We were burning the 99.9% availability SLO at 14×, so about 2% of the monthly budget per hour. That's a page and a rollback, not a ticket."
+
 ## Interview soundbites
 
 - "Existing pods work, new pulls don't. That's a dependency on the pull path, not a capacity problem."

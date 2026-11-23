@@ -484,6 +484,32 @@ spec:
 
 **Punchline:** Multi-cell routing is a **security-critical control plane**. **Digest-pinned signed weights, GetObject-only hydrate, no train SA on routers, NetPol + mTLS across cell boundaries, and no casual cross-cell KV** are what keep “smart capacity routing” from becoming a fleet-wide compromise path.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Multi-cluster routing is where **per-cell SLOs become a global SLO**. The router must send traffic to cells that can meet TTFT, not just cells that answer TCP. Routing health is itself an SLI. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Global availability at the edge or router:** `llm_d_epp_request_outcome_total` by `outcome`, aggregated across cells. This is the number the SLA uses.
+- **Per-cell TTFT and goodput:** `llm_d_epp_request_ttft_seconds`, or engine `vllm:time_to_first_token_seconds` recorded per cell.
+- **Cell admit headroom:** ready endpoints (`llm_d_epp_ready_endpoints`), KV pressure (`llm_d_epp_average_kv_cache_utilization`) and queue (`llm_d_epp_average_queue_size`) per pool.
+- **Failover correctness:** traffic shifted ÷ traffic intended during a drain (**custom**, from routing weights compared with observed RPS per cell).
+
+```promql
+# Per-cell TTFT SLI at the router (<= 1 s)
+sum by (cluster) (rate(llm_d_epp_request_ttft_seconds_bucket{le="1"}[5m]))
+/ sum by (cluster) (rate(llm_d_epp_request_ttft_seconds_count[5m]))
+```
+
+The `le` value depends on the router's bucket layout. Check `/metrics` before writing the rule.
+
+**Example SLOs (examples, not recommendations):** 99.9% global availability over 28 days; each cell meets TTFT ≤ 1 s for 99% of requests while carrying its share plus N+1 failover load; drains finish (traffic below 1%) within 5 min.
+
+**SLA angle:** write the SLA against the **global endpoint**, which is the redundancy you actually sell. Per-cell burn is internal. Make sure a regional failover can't break the latency terms for customers pinned to a region by data residency.
+
+**Alerting:** page on global burn. A single cell burning should trigger an automated drain and a ticket; page only if the drain fails or the remaining cells can't absorb the load.
+
+**Failure signals:** retries without a budget turning one dying cell into a fleet brownout, shallow health checks (TLS accept while serving is in brownout), and digests mixed inside one sticky pool during a rollout.
+
 ## Interview soundbites
 
 - **“Cells are blast-radius units — independent control planes, deliberate cross-cell contracts.”**

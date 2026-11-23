@@ -270,6 +270,30 @@ Keep `tenant` as a label only if the tenant count fits [Lesson 49](/lessons/49-f
 - Document parsers (DeepDoc, OCR, PDF libraries) handle hostile files. Run ingestion in a sandboxed pool (gVisor or Kata, next lesson) with no egress, CPU and memory limits, and per-tenant queues.
 - Memory and vector data never feed training or fine-tuning without an explicit, audited data agreement per tenant; a poisoned memory store must not become a poisoned checkpoint.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Agent memory and context stores sit **on the hot path of every agent turn**. A slow vector search delays the first token, and stale or wrong retrieval is a correctness SLI that no latency metric will show. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Retrieval latency:** the vector store's search latency. On Milvus that's `milvus_proxy_sq_latency` (ms, successful search and query only, `query_type` label). On other stores, use their own histogram or client-side spans (`gen_ai` or DB client semconv).
+- **Retrieval errors:** on Milvus, `milvus_proxy_req_count{status="fail"}` ÷ all requests, plus client-side timeouts. Server metrics miss requests that never arrived.
+- **Freshness:** time from a memory write to it being searchable (**custom**, measured with a write-then-read canary). This is the "agent forgot what I just told it" SLI.
+- **Retrieval quality:** recall@k on a golden query set, run on a schedule after index rebuilds and embedding-model changes (**custom**).
+- **Isolation:** cross-tenant retrieval canaries return zero results (**custom**). Any hit is a security incident, not a reliability one.
+
+```promql
+# Milvus search p99 (ms) by collection; histogram counts only successful searches, so pair with the fail ratio
+histogram_quantile(0.99, sum by (le, collection_name) (rate(milvus_proxy_sq_latency_bucket{query_type="search"}[5m])))
+```
+
+**Example SLOs (examples, not recommendations):** 99% of retrievals ≤ 100 ms; write-to-searchable ≤ 5 s p99; recall@10 on the golden set ≥ 0.9 after every index rebuild; zero cross-tenant canary hits.
+
+**SLA angle:** memory is usually internal, but data-retention and deletion commitments ("forgotten within 30 days") are contractual. Measure deletion completion like an SLO.
+
+**Alerting:** page on retrieval availability and latency burn for tier-1 agents. Ticket on recall regressions. Send cross-tenant hits to security.
+
+**Failure signals:** index rebuilds after an embedding-model change silently cutting recall, compaction storms adding latency, hot tenants dominating a shared collection, and context-window truncation dropping retrieved memory.
+
 ## Interview soundbites
 
 - "Memory is a database the model writes to. I scope it from the token, not from the prompt."

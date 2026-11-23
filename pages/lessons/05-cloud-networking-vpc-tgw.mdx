@@ -282,6 +282,28 @@ aws ec2 describe-security-groups --group-ids sg-app   --query 'SecurityGroups[].
 
 **AI/ML fleets:** put model-weight object stores and private container registries on Private Link / PSC — not flat TGW reachability from every sandbox cell. GPU training VPCs get egress to artifact registries only; inference VPCs get pull-only paths. Never “temporary” overlap a training CIDR with prod serving.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Network SLOs are about **reachability between the places your workloads live**: VPCs, cells, registries and weight buckets. Cloud consoles show device health, not your paths, so SLIs come from probes plus the provider's drop counters. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Path availability:** blackbox probes between cells and to shared services (`probe_success`, `probe_duration_seconds` from blackbox_exporter), one per critical path.
+- **Transit Gateway drops:** CloudWatch `PacketDropCountBlackhole` and `PacketDropCountNoRoute` per attachment. A non-zero blackhole count after a route change is a missing propagation.
+- **IP headroom:** free IPs per subnet or pod CIDR, from your IPAM or CNI. Running out of IPs stops pods scheduling long before anything shows as "down".
+
+```promql
+# Inter-VPC path availability over 5 min, per source/destination pair (blackbox_exporter)
+avg_over_time(probe_success{job="vpc-paths"}[5m])
+```
+
+**Example SLOs (examples, not recommendations):** 99.99% of 1-minute probe intervals succeed on tier-1 paths (serving to weights and registry); p99 RTT stays under a per-path baseline.
+
+**SLA angle:** provider SLAs for VPC or TGW pay credits, not your lost inference minutes, and they exclude your own misconfiguration. Your internal SLO has to assume one attachment can blackhole and keep a second path.
+
+**Alerting:** page when tier-1 path probes burn. Ticket on blackhole drops that appear right after a route-table change, so the change author fixes it.
+
+**Failure signals:** asymmetric routing after a peering change, overlapping CIDRs from a new acquisition, and probes that pass on the control path while the data path (jumbo frames, MTU) fails.
+
 ## Interview soundbites
 
 - **“Peering is not transitive — that is the whole joke.”** If you need spoke-to-spoke via a hub, say Transit Gateway (or equivalent), not a peering mesh.

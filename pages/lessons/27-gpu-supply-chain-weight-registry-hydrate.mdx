@@ -404,6 +404,30 @@ spec:
 
 **Punchline:** fast hydrate and strong provenance are not in tension — **content addressing gives you both**. If every hop moves bytes by digest and verifies on arrival, you can P2P, cache, and preheat aggressively without ever trusting the pipe.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+The weight supply chain decides **cold-start time, and therefore scale-up and failover SLOs**. Measure the cold-start waterfall (pull, hydrate, load, warm-up) as SLIs, because each stage fails differently. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Pod creation to Ready:** `kube_pod_status_ready_time - kube_pod_created` per serving pod. Don't use `kubelet_pod_start_sli_duration_seconds`, which excludes image pulls.
+- **Image and artifact pull:** `kubelet_image_pull_duration_seconds` (alpha), including OCI image volumes carrying weights.
+- **Engine load and warm-up:** SGLang `sglang:weight_load_duration_seconds` and `sglang:startup_time_seconds`; Dynamo `dynamo_component_model_load_time_seconds`; for vLLM, time from container start to `/health` OK (**custom** or probe-based).
+- **Replication freshness:** share of cells with the release digest preheated before traffic shifts (**custom**, from registry or mirror inventory).
+- **Checkpoint commit success:** checkpoints with a commit marker ÷ attempted (**custom**).
+
+```promql
+# p95 creation->Ready seconds for serving pods over the last hour (per namespace)
+quantile by (namespace) (0.95, kube_pod_status_ready_time{namespace=~"serve-.*"} - kube_pod_created{namespace=~"serve-.*"})
+```
+
+**Example SLOs (examples, not recommendations):** p95 cold start ≤ 3 min for a 70B model from an in-cell mirror; 100% of cells preheated before a canary starts; 99.9% of checkpoint commits succeed.
+
+**SLA angle:** cold start sets the RTO for failover and scale-from-zero. If you quote a 15-minute regional RTO, the waterfall measurements have to prove it.
+
+**Alerting:** ticket on cold-start burn. Page if a preheat is missing for a region that is receiving failover traffic.
+
+**Failure signals:** registry egress saturation when 200 pods pull at once, lazy-loading that shifts load time into first-request TTFT, and lifecycle policies that delete a checkpoint before its replacement commits.
+
 ## Interview soundbites
 
 - **"Weights aren't images: inference needs 100% of the bytes before the first token, so lazy loading barely helps — bandwidth, locality, and fan-out do."**

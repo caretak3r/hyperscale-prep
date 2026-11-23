@@ -245,6 +245,29 @@ kubectl -n kube-system get secrets -l kubernetes.io/legacy-token-user=...
 
 **AI/ML fleets:** GPU AMIs and device-plugin DaemonSets are part of the supply chain — sign/pin images, private registries only, and give node profiles **least privilege to pull** model/base images (no world-readable weight buckets). Checkpoint and artifact buckets get KMS + bucket IAM separate from general node roles.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Provisioning is a platform product with an internal customer. The team waiting for a GPU cell cares about **lead time and success rate**, not whether Cluster API's pods are up. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Cluster provisioning success:** clusters reaching Ready ÷ clusters requested, per template or version. **Custom**, or from Cluster API objects exposed through a kube-state-metrics `CustomResourceState` config. The series names depend on your config.
+- **Provisioning lead time:** request to Ready cluster, p95, per environment (**custom** event timestamps from the provisioning workflow).
+- **Node join time:** `kubelet_node_startup_duration_seconds` (a kubelet gauge), plus Machine create to Node Ready from your CAPI or Karpenter data.
+- **Upgrade success:** node pools rolled without manual intervention ÷ attempted.
+
+```promql
+# Nodes whose kubelet startup took longer than 10 minutes (bare-metal GPU nodes are slow; tune the threshold)
+count(kubelet_node_startup_duration_seconds > 600)
+```
+
+**Example SLOs (examples, not recommendations):** 95% of standard cells provisioned in ≤ 60 minutes; 99% of provisioning attempts succeed without a human; 99% of upgrade waves finish inside their maintenance window.
+
+**SLA angle:** this is an *internal* SLA, a published commitment to product teams ("a new inference cell in one business day"). Exclude capacity you don't hold, such as an unfulfilled GPU reservation, explicitly.
+
+**Alerting:** ticket on lead-time burn. Page only when provisioning failures block an active failover or capacity emergency.
+
+**Failure signals:** Machines stuck in Provisioning, bootstrap token expiry, image or AMI drift between cells, and quota errors from the cloud API.
+
 ## Interview soundbites (steal these)
 
 1. **“Provisioning is a control loop, not a script.”** Desired state in Git; CAPI/managed APIs reconcile; humans merge PRs and watch gates.

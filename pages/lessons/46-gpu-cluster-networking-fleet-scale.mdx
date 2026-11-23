@@ -435,6 +435,29 @@ spec:
 - Sign and pin the Network Operator, Multus, SR-IOV and CNI images. They're privileged DaemonSets on every GPU node.
 - Watch for policy gaps: alert on pods with `hostNetwork`, pods in namespaces without a default-deny policy, and backend interfaces on pods whose namespace doesn't own that NAD.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Fleet networking for GPU clusters has three SLO surfaces: **IP capacity** (pods can't start without IPs), **multi-NIC attachment** (training can't start without RDMA NICs) and **isolation correctness**. All three fail before anything shows as "down". See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **IPAM headroom:** Cilium `cilium_ipam_capacity` (agent) and `cilium_operator_ipam_available_ips` per `target_node` (operator, in ENI/Azure/cluster-pool modes), or your CNI's equivalent. Alert on headroom, not on exhaustion.
+- **Pod network setup latency:** creation to Ready for pods with secondary networks, compared with pods without them. Multus or DRA network attachment adds a startup dependency.
+- **Secondary-NIC availability:** `kube_node_status_allocatable` for RDMA or SR-IOV resources, and node_exporter `node_infiniband_state_id` per port.
+- **Isolation probes:** synthetic denied-path probes between training, inference and tenant networks must *fail* (**custom**, `probe_success` should be 0). A passing deny probe is a security SLO violation.
+
+```promql
+# Nodes with fewer than 16 IPs available (operator view; threshold is an example)
+cilium_operator_ipam_available_ips < 16
+```
+
+**Example SLOs (examples, not recommendations):** IP headroom ≥ 20% per pool 99.9% of the time; 99% of multi-NIC pods network-ready within 30 s; 100% of deny-path probes blocked.
+
+**SLA angle:** network isolation between tenants or between training and inference is often a contract term. Deny-probe results are the evidence.
+
+**Alerting:** ticket on IPAM headroom trends. Page if pods fail to start fleet-wide for lack of IPs, or if any deny-path probe succeeds.
+
+**Failure signals:** ENI or prefix limits per instance type, VF exhaustion on SR-IOV NICs, routes missing for the secondary-network CIDR, and policy gaps where `hostNetwork` pods bypass isolation.
+
 ## Interview soundbites
 
 - "Two planes: a routed primary network for everything Kubernetes, and a non-routed RDMA fabric for collectives. Different IPAM, MTU, failures and isolation."

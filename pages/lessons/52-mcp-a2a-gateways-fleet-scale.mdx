@@ -355,6 +355,30 @@ Metric names here are illustrative; map them to whatever your gateway emits (age
 - Kill switch: disable a tool, a server or an agent at the gateway in seconds, through a pre-approved, audited change path that doesn't wait on a full GitOps ring.
 - Patch cadence for the gateway itself; it is internet-adjacent and on every request path.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Tool and agent gateways sit **between every agent and every tool**. Their availability and latency set the floor for agent task success, and their auth decisions are security SLIs. Use the OTel MCP conventions where your gateway emits them. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Gateway availability and latency:** `mcp.server.operation.duration` and `mcp.client.operation.duration` (OTel MCP semconv, development stability; in Prometheus typically `mcp_server_operation_duration_seconds` with an `error_type` label), or your gateway's own request metrics.
+- **Tool-call error rate by tool:** errors ÷ calls per tool and upstream MCP server. One broken tool shouldn't burn the gateway's whole SLO, so give tools tiers.
+- **Auth decision latency and failures:** token exchange and OAuth introspection success ÷ attempts (**custom** or gateway-specific). Auth outages fail closed, which looks like a tool outage.
+- **Policy denials:** denied calls by reason. Expected denials are fine; a spike is either an attack or a broken policy push.
+
+```promql
+# Tool-call error ratio per MCP method (OTel -> Prometheus naming depends on your translation settings)
+sum by (mcp_method_name) (rate(mcp_server_operation_duration_seconds_count{error_type!=""}[5m]))
+/ sum by (mcp_method_name) (rate(mcp_server_operation_duration_seconds_count[5m]))
+```
+
+**Example SLOs (examples, not recommendations):** gateway availability 99.95%; gateway-added latency ≤ 50 ms p99; tier-1 tool calls succeed ≥ 99.5% (excluding tool-side 4xx).
+
+**SLA angle:** third-party MCP servers bring their own (often missing) SLAs. Your agent SLA can't be tighter than the tool chain allows, so tier tools and exclude or fall back for non-tier-1 ones.
+
+**Alerting:** page on gateway availability burn and auth-path failures. Ticket per tool. Send policy-denial spikes to security.
+
+**Failure signals:** an upstream MCP server timing out and holding gateway connections, OAuth provider rate limits, schema changes breaking tool calls, and registry outages blocking tool discovery.
+
 ## Interview soundbites
 
 - "The agent gets one token, for the gateway. Everything downstream is token exchange with a new audience. Token passthrough is how you build a confused deputy."

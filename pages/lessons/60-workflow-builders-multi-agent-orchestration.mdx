@@ -165,6 +165,29 @@ agentLimits:
 9. **Blast-radius limits for swarms.** Caps on depth, fan-out, steps, tokens, wall-clock and concurrency; loop detection; per-flow gateway keys and budgets; a per-tenant kill switch that revokes keys, drains the queue and suspends the cell ([L58](/lessons/58-agent-identity-delegated-authorization)); human approval gates for irreversible actions ([L57](/lessons/57-agent-ui-protocols-durable-execution)).
 10. **Detection and lifecycle.** Ship audit logs and execution logs to the central pipeline; alert on new stdio MCP registrations, deprecated nodes, outbound to unusual hosts and token spikes. Subscribe to each engine's advisories (GitHub's database may not cover Dify), set patch SLOs, and keep an exit plan per engine in case the project is archived like Flowise.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Multi-tenant workflow builders (Dify, n8n, Langflow, Flowise) run **untrusted user-built graphs**. SLIs must separate platform failures from user-workflow failures, and cap per-tenant blast radius on shared workers. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Execution start latency:** trigger → first node running, per tenant (queue wait in the builder's worker queue). Builder metric names vary by product and version, so treat these as **custom** or check the builder's `/metrics`.
+- **Platform-caused execution failures:** worker crashes, OOMs, queue loss and timeouts *not* raised by user nodes ÷ executions. User-code exceptions go in a separate bucket.
+- **Per-tenant fairness:** p99 start latency of the 10 quietest tenants while the noisiest is bursting (**custom**). This shows whether quotas work.
+- **Code-node isolation:** code nodes executing in the sandboxed runner ÷ all code-node executions (**custom**). This must be 100%.
+
+```promql
+# Platform-side signal from Kubernetes: worker restarts by reason (builder-agnostic)
+sum by (namespace, reason) (kube_pod_container_status_last_terminated_reason{namespace=~"wf-.*"})
+```
+
+**Example SLOs (examples, not recommendations):** 99% of executions start ≤ 2 s; platform-caused failures ≤ 0.1%; quiet-tenant p99 unaffected (≤ 1.2× baseline) during noisy bursts; 100% of code nodes sandboxed.
+
+**SLA angle:** exclude user-workflow errors and third-party node failures explicitly in the SLA. Promise trigger acceptance and execution start, not workflow outcome.
+
+**Alerting:** page on queue backlog growth and worker crash loops. Ticket on tenant fairness breaches. Send plugin or code-node isolation breaks to security.
+
+**Failure signals:** an agent swarm fanning out thousands of sub-executions, plugins pulling unpinned dependencies at runtime, secrets in workflow exports, and Redis or queue saturation stalling every tenant.
+
 ## Interview soundbites
 
 - "For a workflow builder, the author is a code executor; I design for that, not against it."

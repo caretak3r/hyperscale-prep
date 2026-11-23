@@ -581,6 +581,30 @@ spec:
 
 **Punchline:** a well-hardened scaling loop has **trusted signals** (computed by the router, not the workload), **layered ceilings** (scaler → quota → NodePool → cloud), an **authenticated wake path**, and **verification on every scale-out**. With those in place, aggressive autoscaling is safe to turn on.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Autoscaling is a **control loop against an SLO**. The scaling signal has to lead the SLI (queue time, waiting requests, KV usage), and the SLO has to account for the time it takes to scale. Scale-from-zero pays its cold start out of somebody's TTFT budget. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **TTFT during scale events:** `vllm:time_to_first_token_seconds` sliced by "scaling in progress" windows. Compare burn during ramps with steady state.
+- **Leading signals:** `vllm:num_requests_waiting`, `vllm:kv_cache_usage_perc`, and `vllm:request_queue_time_seconds` p95. These are the HPA/KEDA inputs, not the SLO.
+- **Scale latency:** time from desired-replica increase to new replicas Ready, from HPA/KEDA status plus `kube_pod_status_ready_time`. For Knative, `kn.revision.pods.desired` against `kn.revision.pods.count` (OTel names in recent Knative).
+- **First-request penalty after scale-from-zero:** the activator or queue wait. Knative exports `kn.serving.queue.depth`, and gateway queue time also works.
+- **Autoscaler health:** `keda_scaler_errors_total` and `keda_scaler_metrics_latency_seconds`. A broken scaler fails quietly.
+
+```promql
+# Leading indicator the HPA should act on before TTFT burns
+max by (model_name) (vllm:num_requests_waiting) > 0 and max by (model_name) (vllm:kv_cache_usage_perc) > 0.9
+```
+
+**Example SLOs (examples, not recommendations):** TTFT ≤ 1 s for 99% of requests *including* ramp periods; new replica Ready within 5 min of a scale decision for 95% of events; scale-to-zero models: the first request after idle completes in ≤ 60 s (a separate, labelled SLO).
+
+**SLA angle:** if a tier scales to zero, the SLA must say so, either by excluding cold starts or by putting cold-start latency in its own clause. Otherwise a quiet customer's first request breaks the latency terms every morning.
+
+**Alerting:** page on TTFT burn. Ticket on scaler errors and scale-latency burn. Don't page on "HPA at max" alone; page if it's at max *and* the SLO is burning.
+
+**Failure signals:** HPA tolerance hiding small rises in load, KEDA reading a stale metric after a Prometheus restart, and node provisioning (GPU capacity) as the real bottleneck behind a "slow" HPA.
+
 ## Interview soundbites
 
 - **"GPU util is 100% at 2 streams and at 200. It's a dashboard, not a trigger. Scale on queue, KV, and TTFT burn."**

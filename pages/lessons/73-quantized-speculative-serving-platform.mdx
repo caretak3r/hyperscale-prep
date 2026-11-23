@@ -876,6 +876,25 @@ kv-flip      -> --kv-cache-dtype must match the gated release (annotation platfo
 
 vLLM ≥ **0.33.0** for the speculators verifier redirect. This also covers the earlier spec-decode crash fixes (0.18.0, 0.20.0), pin decay (0.22.0) and the `auto_map` RCE (0.14.0). The current release is v0.34.0. No published GitHub security advisories for llm-compressor, compressed-tensors, ModelOpt, SGLang, speculators, GuideLLM or model-transparency (checked via each repo's advisory API today). That's not evidence of safety: the quantize runner is a pickle-adjacent, `trust_remote_code`-capable toolchain, so isolate it anyway.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Quantized and speculative serving turn **accuracy and acceptance into release-gated SLIs**. A quantized checkpoint is a new model with its own quality SLO, and acceptance length is a capacity input that drifts with traffic. The acceptance-length rules above are the production form of this. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Acceptance rate and length (vLLM):** rate `vllm:spec_decode_num_accepted_tokens_total` ÷ `vllm:spec_decode_num_draft_tokens_total`, and length 1 + accepted ÷ `vllm:spec_decode_num_drafts_total`. On SGLang, `sglang:spec_accept_length` and `sglang:spec_accept_rate`.
+- **Latency outcome:** inter-token latency (`vllm:inter_token_latency_seconds`) per traffic class. Speculation exists to improve this, so the SLO is on ITL and TPOT, with acceptance as the capacity lever.
+- **Quality gate:** eval score of the quantized artifact against the base on the pinned eval suite (lm-eval), with a pass or fail per release (**custom**, recorded per artifact digest). It's a release SLO, not a runtime metric.
+- **Serving regression gate:** goodput at the TTFT and TPOT SLO from `vllm bench serve` or GuideLLM on every engine bump, compared with the last release (**custom** report).
+- **Runtime correctness:** `vllm:request_success_total{finished_reason="repetition"}` spikes, and NaN detection (`vllm:corrupted_requests`, only with `VLLM_COMPUTE_NANS_IN_LOGITS`), as signals that a kernel or quant change broke output.
+
+**Example SLOs (examples, not recommendations):** acceptance length ≥ the capacity plan's value (2.2 in this lesson) over 30 min; ITL p99 ≤ 50 ms for interactive traffic; quantized artifact within 1 point of base on every gated eval; no release with goodput below the previous release.
+
+**SLA angle:** customers buying a model buy its quality. Disclose quantization and version the model ID per artifact, so an SLA on "model X" doesn't silently mean "a different quantization of model X".
+
+**Alerting:** page when acceptance falls below the capacity plan (TPOT and GPU count at risk). Ticket on drift against the 7-day baseline. Block the release on gate failures; don't alert on them.
+
+**Failure signals:** random-token benchmarks reporting zero acceptance, temperature or structured-output changes cutting acceptance, KV-cache FP8 scales missing (accuracy loss), and engine bumps changing kernel backends.
+
 ## Interview soundbites
 
 - "A quantized checkpoint is a new model. The release unit is the tuple: target artifact, draft, engine image, GPU SKU and serving flags. Each tuple gets an accuracy gate against the base and a serving gate against the last promoted run."

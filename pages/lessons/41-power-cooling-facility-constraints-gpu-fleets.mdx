@@ -338,6 +338,29 @@ kubectl get nodes -l facility.example.com/cdu=h3-cdu-04 -o name | \
 # 5. Release only after facilities confirms flow and 30 minutes of normal delta-T; remove caps last
 ```
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Power and cooling show up in SLOs as **throttling** (TPOT and step time regress while GPUs look "healthy") and as **correlated loss** (a CDU or PDU takes out racks together). Make throttling an SLI, and put facility domains into blast-radius math. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Throttle time:** `DCGM_FI_DEV_POWER_VIOLATION` and `DCGM_FI_DEV_THERMAL_VIOLATION` (opt-in counters, nanoseconds of throttling in 4.8.4) as a fraction of wall time per GPU.
+- **Thermal headroom:** `DCGM_FI_DEV_GPU_TEMP` and `DCGM_FI_DEV_MEMORY_TEMP` against the slowdown threshold (4.9.0: `*_CELSIUS` names).
+- **Power vs budget:** `DCGM_FI_DEV_POWER_USAGE` summed per rack or row against the rack power budget (rack mapping via node labels).
+- **Facility events:** CDU, leak and PDU alarms from the BMS or DCIM (**custom** integration), mapped to node sets.
+
+```promql
+# Share of time each GPU spent thermally throttled (4.8.4 opt-in counter, ns -> s)
+rate(DCGM_FI_DEV_THERMAL_VIOLATION[10m]) / 1e9
+```
+
+**Example SLOs (examples, not recommendations):** ≤ 1% of GPU-time thermally throttled per week on serving pools; rack power ≤ 90% of budget for 99.9% of minutes; zero unplanned multi-rack losses from a single facility domain per quarter.
+
+**SLA angle:** colo and facility SLAs (power availability, cooling) feed your GPU SLOs. Make sure the redundancy you rely on (N+1 CDU, 2N power) is what the contract actually provides.
+
+**Alerting:** one hot GPU is a ticket. Many trays hot at once is a facilities page. Power-cap actions should be automated, with budget burn on serving SLOs as the guardrail.
+
+**Failure signals:** diurnal and weather-driven throttling, synchronous power swings from large training steps, and a failed CDU pump showing up as XIDs before the facility alarm reaches you.
+
 ## Interview soundbites
 
 - "The smallest rating in the power path is the budget: breaker at 80%, feed redundancy, PSU redundancy, then the GPU limit."

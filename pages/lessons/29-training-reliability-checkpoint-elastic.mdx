@@ -563,6 +563,32 @@ cosign verify-blob manifest.json --bundle manifest.json.sigstore.json \
 
 **Punchline:** a hardened restart loop **only resumes from checkpoints it can prove it wrote** (prefix-scoped identity, KMS, signed hash manifest), **never unpickles unverified bytes**, keeps rendezvous and NCCL reachable **only by its own gang** (NetPol for TCP, PKeys for RDMA), and treats remediation and restart policies as privileged, rate-limited APIs. That's what makes aggressive auto-restart safe.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+For training, pod uptime is meaningless. The SLIs are **goodput** (useful progress ÷ GPU time held), **checkpoint age** and **time to recover**, and most of them are metrics you have to emit yourself. The [SRE playbook](/sre-slis-slos-slas) has the training SLI table.
+
+**SLIs an SRE owns here:**
+- **Job goodput:** committed training progress ÷ wall-clock time × GPUs allocated, with steps redone after a restart subtracted (**custom**, from trainer step counters and checkpoint metadata).
+- **Checkpoint age and success:** `time()` − last committed checkpoint (**custom** gauge) and committed ÷ attempted saves. Checkpoint age is the RPO of a training run.
+- **Time to recover:** failure to the first step after resume. `kueue_workload_recovery_wait_time_seconds` (with `waitForPodsReady`) covers recovery to Ready; the restore and first step are **custom**.
+- **Hang detection:** steps per minute dropping to zero while pods stay Running (**custom** step counter rate). This catches NCCL watchdog-class hangs.
+- **Failure classification:** `jobset_failed_total` and `kueue_evicted_workloads_total{reason}`, split into infrastructure and user failures.
+
+```promql
+# Hung run detector: progress stalled for 10 min while the JobSet is still active (custom step counter)
+rate(train_steps_committed_total[10m]) == 0
+```
+
+`train_steps_committed_total` is an example name for your trainer's counter.
+
+**Example SLOs (examples, not recommendations):** weekly job goodput ≥ 90% on the frontier run; checkpoint age ≤ 30 min for 99% of minutes; recovery to the first step ≤ 20 min at p95 after a node failure.
+
+**SLA angle:** training platforms sell **GPU-hours of goodput**, not uptime. An internal SLA is usually "infra-caused restart waste ≤ X% per month", with credits in GPU-hours.
+
+**Alerting:** page when progress stalls on a large run (every minute idle costs thousands of GPU-minutes), or when checkpoint age exceeds 2× the interval. Ticket on goodput trends.
+
+**Failure signals:** stragglers (slow but alive), resume that silently changes data order or the LR schedule, checkpoint saves that grow longer than the interval, and the same bad node failing a job repeatedly.
+
 ## Interview soundbites
 
 - **"MTTF falls as one over N. At 16k GPUs it's under two hours, so checkpoint cadence is a formula, Young/Daly root of two δ M, recomputed from the live failure rate, not a vibe."**

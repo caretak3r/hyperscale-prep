@@ -544,6 +544,30 @@ spec:
 
 The first statement belongs in the trainer role's identity policy (the principal tags come from the job's workload identity); the deny belongs in the bucket policy. Deletion on snapshot prefixes is handled by Object Lock and a break-glass role, never by the trainer or the pipeline.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Data loading rarely fails outright. It **steals goodput**: GPUs sit idle waiting for the next batch. The SRE's SLI is the input-stall fraction, and storage tiers get SLOs because they feed it. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Input-stall fraction:** time each step spends waiting on the DataLoader ÷ step time (**custom**, from the trainer, for example a `dataloader_wait_seconds` histogram). This is the training SLI that storage problems actually move.
+- **Node I/O pressure:** `node_pressure_io_stalled_seconds_total` (node_exporter PSI collector) on GPU nodes during training.
+- **Cache-tier health:** NVMe cache hit ratio and fill rate from your streaming library or CSI driver (**custom**). Local cache free space comes from `kubelet_volume_stats_available_bytes` for PVC-backed caches.
+- **Shared-tier throughput vs plan:** aggregate read GB/s from the shared filesystem or object store against the bytes/s the job mix needs (provider metrics).
+- **Data-position correctness on resume:** resumed runs whose sample index matches the checkpoint (**custom** assertion). A wrong resume is a silent correctness SLO miss.
+
+```promql
+# Share of wall time GPU nodes spent with I/O-stalled tasks (PSI), per node
+rate(node_pressure_io_stalled_seconds_total{node=~"gpu-.*"}[5m])
+```
+
+**Example SLOs (examples, not recommendations):** input stall ≤ 2% of step time for 99% of steps on production runs; NVMe cache hit ≥ 95% after the first epoch; shared-tier p99 first-byte latency ≤ 50 ms.
+
+**SLA angle:** storage vendors' SLAs cover durability and availability, not your step time. Size tiers from the bytes/s math, and keep the input-stall SLO internal.
+
+**Alerting:** ticket on input-stall burn and cache-hit drops. Page only if a shared-tier outage stalls every large run at once.
+
+**Failure signals:** small-file metadata storms on the shared filesystem, a `/dev/shm` that's too small for DataLoader workers, FUSE mounts hanging on token expiry, and prewarm skipped before admission.
+
 ## Interview soundbites
 
 - **"Do the bytes-per-second math first. A 70B model on sixteen thousand GPUs reads about sixty megabytes a second of pre-tokenized data. That job isn't bandwidth-bound; it's startup-, metadata- and tail-bound."**

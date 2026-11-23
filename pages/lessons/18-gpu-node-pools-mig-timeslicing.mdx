@@ -374,6 +374,30 @@ spec:
 
 **Punchline:** MIG gives hardware walls; time-slicing does not. **IAM, admission, NetPol, and signing** are what stop a shared L4 notebook from becoming a weight exfil path — SKU taints alone are not enough.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+GPU pools are products with **different SLO tiers**. Exclusive and MIG pools can carry latency SLOs; time-sliced pools can't, because there's no memory or fault isolation. Say which tier gets which promise. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Healthy-GPU ratio per pool:** `kube_node_status_allocatable{resource="nvidia_com_gpu"}` on Ready, schedulable nodes ÷ `kube_node_status_capacity{resource="nvidia_com_gpu"}`. Allocatable falling to 0 while capacity is still 8 means the device plugin or driver is unhealthy.
+- **GPU wait time:** pending pods requesting GPUs (`kube_pod_status_unschedulable`, joined with pod resource requests) and `scheduler_pod_scheduling_sli_duration_seconds`.
+- **Node provisioning latency:** `karpenter_pods_startup_duration_seconds`, or creation to Ready from kube-state-metrics.
+- **MIG and time-slicing interference:** per-workload TTFT/ITL from the engine (`vllm:time_to_first_token_seconds`) compared between shared and exclusive pools.
+
+```promql
+# Device-plugin health: nodes advertising GPU capacity but zero allocatable
+(kube_node_status_capacity{resource="nvidia_com_gpu"} > 0)
+unless on (node) (kube_node_status_allocatable{resource="nvidia_com_gpu"} > 0)
+```
+
+**Example SLOs (examples, not recommendations):** exclusive pools at ≥ 98% healthy GPUs, 99.5% of the time; 95% of GPU pods scheduled in ≤ 2 min when capacity exists; time-sliced dev pools carry *no* latency SLO, only availability.
+
+**SLA angle:** an SLA that names a GPU SKU or "dedicated GPU" has to be backed by pool isolation (taints, RuntimeClass, admission). Time-slicing can't honour a latency SLA.
+
+**Alerting:** page when a pool's healthy-GPU ratio drops below the reserve its serving SLOs were sized on. Ticket and auto-cordon single-node faults.
+
+**Failure signals:** a GPU Operator upgrade resetting MIG layouts, driver/toolkit mismatch after a node image bump, and autoscaler scale-up loops for pods whose node selector no pool matches.
+
 ## Interview soundbites
 
 - **“GPUs are SKU pools with taints — not unlabeled capacity.”**

@@ -410,6 +410,31 @@ spec:
 
 **Punchline:** Shared platforms amplify mistakes; progressive delivery still ships code; soft multi-tenancy still shares a kernel and often a GPU. **Signing, IAM, admission, NetPol, and short-lived secrets are not “phase 2.”**
 
+## SRE focus: SLIs, SLOs & SLAs
+
+In design interviews **the SLO is the tie-breaker**. Every tradeoff in this lesson (cells vs shared, consistency vs availability, canary vs big-bang) is easier to argue once you say which SLI it protects and how much budget it costs. See the [SRE playbook](/sre-slis-slos-slas).
+
+**How to use SLOs in a tradeoff answer:**
+- **Cells vs shared control:** cells cap blast radius, so one bad change burns one cell's budget, not the fleet's. Quote it as "worst case X% of users, not 100%".
+- **Consistency vs availability:** give reads and writes different SLOs. Inference routing reads can serve stale endpoint data; quota and billing writes can't.
+- **Progressive delivery:** a canary gate *is* an SLI comparison. Promote only if the canary's burn rate isn't worse than baseline's.
+- **Build vs buy:** a managed service's SLA sets a ceiling on your SLO. You can't promise 99.99% on top of a 99.9% dependency without redundancy.
+- **Cost vs latency:** headroom is what lets you meet TTFT during a cell loss. Cutting it is a decision to spend error budget.
+
+```promql
+# Canary gate sketch: canary error ratio must not exceed baseline by more than 20% (example margin)
+(sum(rate(llm_d_epp_request_outcome_total{target_model_name="m-canary",outcome="failed"}[10m]))
+ / sum(rate(llm_d_epp_request_outcome_total{target_model_name="m-canary"}[10m])))
+<= 1.2 * (sum(rate(llm_d_epp_request_outcome_total{target_model_name="m-stable",outcome="failed"}[10m]))
+ / sum(rate(llm_d_epp_request_outcome_total{target_model_name="m-stable"}[10m])))
+```
+
+**Example SLO framing (example, not recommendation):** "This design keeps a single bad push to at most 1 of 12 cells (8% of traffic), which fits inside a 99.9% monthly budget if detection plus rollback takes under 45 minutes."
+
+**SLA angle:** dependencies compose. Availabilities multiply in series and improve in parallel. Say this before promising any SLA.
+
+**Failure signals to name:** correlated changes across cells, shared dependencies that defeat the cell boundary (one global DNS, one IdP, one registry), and canaries too small to reach statistical significance.
+
 ## Interview soundbites
 
 - **“Blast radius first, leverage second — share policy, isolate quorum.”**

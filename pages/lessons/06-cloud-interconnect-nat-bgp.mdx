@@ -264,6 +264,24 @@ aws directconnect describe-bgp-peers --virtual-interface-id dxvif-xxx
 
 **AI/ML fleets:** corp ↔ cloud paths that can reach weight buckets or training data lakes need the same prefix filters as any PCI path. Prefer Private Link for artifact registries over hairpinning pulls through NAT “because it worked.” Encrypt hybrid hops when checkpoints cross the DX boundary.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Hybrid paths (Interconnect or Direct Connect, NAT, BGP) are the hidden dependency behind **model and image pulls, on-prem data and egress to model hubs**. Their SLIs are about session state and egress success, not link lights. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **BGP session up:** GCP `router.googleapis.com/bgp/session_up`; AWS Direct Connect `ConnectionState` and `VirtualInterfaceBpsEgress`.
+- **Interconnect link health:** GCP `interconnect.googleapis.com/network/interconnect/link/operational` and `interconnect.googleapis.com/network/attachment/capacity`.
+- **NAT egress success:** GCP `router.googleapis.com/nat/nat_allocation_failed` and `nat/dropped_sent_packets_count`; AWS NAT gateway `ErrorPortAllocation` and `PacketsDropCount`. Port exhaustion looks like random pull timeouts.
+- **Route health:** `router.googleapis.com/bgp/received_routes_count` against the expected prefix count. A sudden drop means withdrawn routes.
+
+**Example SLOs (examples, not recommendations):** 99.95% of 5-minute windows with at least one healthy BGP session per region pair; under 0.01% of NAT connections failing on port allocation.
+
+**SLA angle:** Google's Dedicated Interconnect SLA applies only when you build the qualifying redundant topology (99.9% needs redundant connections in one metro; 99.99% needs connections across two metros). An SRE must confirm the build actually qualifies before quoting the SLA to anyone.
+
+**Alerting:** page when *all* sessions to a region are down, or NAT allocation failures burn the pull-success SLO. Ticket when a single session flaps.
+
+**Failure signals:** a GPU scale-out that triples NAT connections, BGP MED or local-pref changes that move traffic onto the thin link, and an MTU mismatch over the interconnect that breaks large weight transfers only.
+
 ## Interview soundbites
 
 - **“DX is an attachment to the hub, not a special snowflake per VPC.”** Cells attach to TGW/Cloud Router; the hub peers BGP to on-prem.

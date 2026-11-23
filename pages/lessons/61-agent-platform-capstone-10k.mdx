@@ -257,6 +257,26 @@ temporal workflow terminate --query 'AgentVersion="research-agent-v7" AND Execut
 9. **Blast radius and abuse.** Threat: runaway swarms and denial of wallet. Control: per-task budgets, step, depth and fan-out caps, per-tenant quotas per cell, and a layered kill switch (gateway deny, identity disable, run cancellation) with a measured time-to-stop SLO that you drill.
 10. **Detection and audit.** Join keys from user to run to model spend to tool calls to commits or deploys; alert on new tool registrations, unusual egress, token spikes and approval bypass attempts; red-team agents in CI before release ([L56](/lessons/56-agent-observability-evaluation)).
 
+## SRE focus: SLIs, SLOs & SLAs
+
+At 10K concurrent agents, SLOs have to be **layered**: task-level SLOs for the product, and component SLOs (gateway, model, sandbox, memory, browser) that sum to fit inside them. The SLO definitions block above is Sloth-style. Two corrections for a real deployment are below. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Task success and first-event latency:** `agent_task_finished_total` and `agent_first_event_seconds` are **custom** (example names). Emit them from the run API.
+- **Sandbox claim-to-ready:** the upstream agent-sandbox metric is `agent_sandbox_claim_startup_latency_ms` (milliseconds), *not* `agent_sandbox_claim_ready_seconds`. Its buckets include `le="1000"`, which you use for a 1 s target.
+- **Model layer:** router `llm_d_epp_request_ttft_seconds` and `llm_d_epp_request_outcome_total` per model.
+- **Per-cell capacity headroom:** running agents ÷ cell budget, and the warm-pool ready ratio. This is where capacity and SLO meet.
+
+**Budget composition:** if a task makes ~20 serial dependent calls each at 99.9%, task availability is at most ~0.999²⁰ ≈ 98%. Either set the task SLO below that, or add retries and fallbacks and measure that they work.
+
+**Example SLOs (examples, not recommendations):** task success ≥ 90% (eval-defined); first event ≤ 2 s for 99%; sandbox ready ≤ 1 s for 99%; cell headroom ≥ 20% for 99.9% of minutes.
+
+**SLA angle:** sell platform availability and first-event latency per cell or region. Task success stays an internal or eval-backed objective. The kill-switch drill result is the security SLA evidence.
+
+**Alerting:** page on task-success and first-event burn per cell, with cause alerts (sandbox, gateway, model) as dashboard links rather than separate pages. Ticket on cost per task.
+
+**Failure signals:** retry storms multiplying model load, one cell's global dependency (identity, registry) failing every cell, and per-task cost spikes from runaway loops.
+
 ## Interview soundbites
 
 - "Little's law first: concurrency over task length gives arrivals, concurrency over step interval gives model calls. Everything else falls out."

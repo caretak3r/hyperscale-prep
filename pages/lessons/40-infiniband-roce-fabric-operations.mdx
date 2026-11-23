@@ -344,6 +344,29 @@ kubectl taint node $NODE fabric.example.com/degraded=true:NoSchedule   # no new 
 # 3. Repair ladder, then return only after: ib_write_bw on the rail, NCCL baseline, 24h of clean counters
 ```
 
+## SRE focus: SLIs, SLOs & SLAs
+
+As this lesson says, fabric health is an SLO, not a dashboard. Define it the way jobs feel it: **bus bandwidth at least 90% of baseline** for a given collective and job size. Port counters are the causes behind that SLI. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Collective performance SLI:** NCCL all-reduce and `ib_write_bw` canary busBW ÷ baseline per scalable unit and rail (**custom** gauge from canary Jobs).
+- **Port error rates:** `node_infiniband_symbol_error_total`, `node_infiniband_link_error_recovery_total`, `node_infiniband_link_downed_total` and `node_infiniband_port_constraint_errors_received_total`, as rates per port.
+- **Isolated-port budget:** ports administratively isolated ÷ ports per scalable unit (**custom**, from the port ledger or UFM).
+- **Congestion (RoCE):** PFC pause and ECN-marked counters from the switch NOS. Names depend on the vendor exporter, so label them per platform.
+
+```promql
+# Link flaps per port in the last day (each flap can kill a job's collective)
+increase(node_infiniband_link_downed_total[1d]) > 0
+```
+
+**Example SLOs (examples, not recommendations):** 99% of canaries at ≥ 90% of baseline busBW per scalable unit; no more than 1% of ports isolated per scalable unit before a human reviews; zero untriaged flapping ports older than 24 h.
+
+**SLA angle:** fabric vendors and colo providers may have SLAs on optics and switch replacement. Your training SLA (goodput) depends on them, so track their turnaround.
+
+**Alerting:** auto-isolate a flapping port and ticket it. Page when canary busBW drops across a spine or a whole scalable unit, which is subnet-manager-, firmware- or cooling-level.
+
+**Failure signals:** link flaps that kill collectives, subnet manager failover re-routing the fabric mid-job, PFC storms spreading from one bad NIC, and cable-plan drift after an RMA.
+
 ## Interview soundbites
 
 - "On a synchronous training job, the slowest link sets the step time, so I care more about degraded links than dead ones."

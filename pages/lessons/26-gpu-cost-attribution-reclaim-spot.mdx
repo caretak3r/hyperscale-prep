@@ -586,6 +586,24 @@ spec:
 
 **Punchline:** GPU FinOps is a **security-critical capacity market**. Attribute with honest meters and labels; reclaim with Kueue + checkpoints; prefer spot for checkpointed batch and on-demand/reserved for SLO inference; join CUR cleanly — and **never** trade signed digests, RO mounts, or scoped IAM for a lower line item.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Cost work changes reliability. Spot capacity, reclaim and bin-packing all **spend error budget**, so an SRE frames cost decisions as "how much budget does this save money with?" and refuses to put latency-SLO workloads on capacity that can be reclaimed. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Restart waste:** GPU-hours lost to preemption or spot reclaim (time since the last checkpoint × GPUs at eviction) ÷ GPU-hours used. Combine `kueue_evicted_workloads_total{reason}` with **custom** checkpoint-age data.
+- **Reclaim notice handled:** spot interruptions where pods drained and checkpointed before the deadline ÷ interruptions. Karpenter exposes `karpenter_interruption_received_messages_total`; the success side is **custom**.
+- **Serving on reclaimable capacity:** serving pods on spot or preemptible nodes (target zero for tier-1). Join kube-state-metrics pods with node capacity-type labels.
+- **Idle reserved capacity:** reserved GPUs allocated to nothing. This is a cost SLI, but it also counts as unused failover headroom.
+
+**Example SLOs (examples, not recommendations):** at least 95% of spot reclaims finish a checkpoint before termination; restart waste ≤ 5% of training GPU-hours per week; zero tier-1 inference replicas on spot.
+
+**SLA angle:** spot or preemptible-backed product tiers ("batch, best-effort") need SLA language that excludes preemption, or offers only a completion-deadline SLA.
+
+**Alerting:** ticket on restart-waste burn and spot-pool exhaustion. Page if tier-1 serving lands on reclaimable capacity because a flavor or nodeSelector is wrong.
+
+**Failure signals:** correlated reclaims in one AZ or instance family, drains longer than the 2-minute notice, a MIG parent and its slices billed twice, and "savings" that come out negative once restart waste is counted.
+
 ## Interview soundbites
 
 - **“Bill allocation + purchase-option; report util and restart waste as efficiency — not the invoice.”**

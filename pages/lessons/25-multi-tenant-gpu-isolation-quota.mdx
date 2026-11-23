@@ -484,6 +484,30 @@ spec:
 
 **Punchline:** Multi-tenant GPU platforms are **security-critical capacity markets**. **Per-tenant digests, prefix-scoped GetObject-only WI, no shared writable caches, NetPol + VAP, topology-aware quotas, and chargeback without PII** are what keep “fair-share utilization” from becoming cross-org compromise.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+In multi-tenant GPU platforms the SLO is **per tenant**. "The fleet is green" means nothing to the tenant whose quota can't be reclaimed or whose time-sliced neighbour wrecks their TPOT. The hard part is measuring per tenant without exploding cardinality or leaking tenant names. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Quota honoured:** reserved quota obtainable within the reclaim window, from `kueue_cluster_queue_resource_usage` against `kueue_cluster_queue_nominal_quota`, plus `kueue_preempted_workloads_total{reason="InCohortReclamation"}` timing.
+- **Per-tenant admission wait:** `kueue_local_queue_admission_wait_time_seconds` (LocalQueue metrics must be enabled in the Kueue config), where a LocalQueue maps to a tenant namespace.
+- **Per-tenant serving SLIs:** router metrics by `fairness_id` (`llm_d_epp_request_ttft_seconds`, `llm_d_epp_request_outcome_total`). Engines have no tenant label.
+- **Noisy-neighbour detector:** the TTFT/ITL difference between a tenant on shared (MIG or time-sliced) GPUs and the same model on exclusive GPUs.
+
+```promql
+# Per-tenant availability at the router (bounded fairness_id; overflow tracked separately)
+1 - sum by (fairness_id) (rate(llm_d_epp_request_outcome_total{outcome="failed"}[30m]))
+  / sum by (fairness_id) (rate(llm_d_epp_request_outcome_total[30m]))
+```
+
+**Example SLOs (examples, not recommendations):** reserved quota reclaimable within 10 min for 99% of reclaim events; per-tenant availability 99.9% for hard-isolated tiers; soft (time-sliced) tiers carry availability only, with no latency SLO.
+
+**SLA angle:** tenant SLAs are where **isolation tiers become contract terms**. Only hard-isolated tiers (MIG or exclusive, separate KV) should carry latency SLAs. Report SLA attainment per tenant from router data, and never show one tenant another tenant's numbers.
+
+**Alerting:** page when a hard-isolation tenant burns, or when reclaim of reserved quota fails. Ticket on fairness drift (one tenant holding burst for days).
+
+**Failure signals:** quota defined on `nvidia.com/gpu` but not on MIG profiles, fragmentation that makes free GPUs unusable, and tenant labels with unbounded values (`llm_d_epp_fairness_id_overflow_total` rising).
+
 ## Interview soundbites
 
 - **“Soft sharing (time-slice/MPS) is utilization; MIG/exclusive/NetPol/RBAC is tenancy.”**

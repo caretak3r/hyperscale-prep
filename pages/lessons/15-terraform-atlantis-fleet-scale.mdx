@@ -356,6 +356,25 @@ resource "aws_s3_bucket_public_access_block" "weights" {
 
 **Punchline:** Admission and NetPol harden what **runs**. Atlantis hardens who may **change the substrate** those controls sit on. Skip L15 and a friendly PR can re-open the hole L13 closed.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Infrastructure-as-code is the **change system**, so its SLIs are change-delivery and change-safety metrics, and it's where the error-budget policy gets enforced. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Plan/apply success:** applies that succeed without a manual fix ÷ applies attempted, per project (**custom**, from Atlantis webhooks or CI results).
+- **Change lead time:** PR opened to applied, p50 and p95 (**custom**, DORA-style).
+- **Change failure rate:** applies followed by a rollback or an incident within 24 h ÷ applies (**custom**, joined with incident records).
+- **Drift:** stacks with a non-empty scheduled plan (**custom**). Drift is a reliability risk, because the next apply will do something nobody reviewed.
+- **Lock contention:** time PRs wait on a locked project or state.
+
+**Example SLOs (examples, not recommendations):** 95% of network-cell changes applied within 1 business day of approval; change failure rate ≤ 5% per quarter; 100% of production stacks drift-checked daily.
+
+**SLA angle:** none externally. The useful link is **error-budget policy**: when a service's budget is exhausted, Atlantis `apply_requirements` (or a policy check) blocks non-emergency applies to that service's stacks.
+
+**Alerting:** ticket-only, apart from a failed apply that left production half-changed, which pages the change owner.
+
+**Failure signals:** expired plan files applied out of order, provider credential expiry breaking every apply at once, and state locks left behind by crashed runs.
+
 ## Interview soundbites
 
 - **“I don’t apply prod from a laptop — Atlantis plans on the PR, humans and policy gate apply.”**

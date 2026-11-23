@@ -457,6 +457,32 @@ ssh "$NODE" 'for d in /dev/nvme*n1; do sudo nvme sanitize "$d" --sanact=4; done'
 # Rotate this node's BMC credential in the vault; record serials and ticket id in the ledger
 ```
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Lifecycle automation is a reliability system with a **budget**. Burn-in, firmware waves and RMA all take GPUs out of service, so they need SLOs on throughput and correctness plus a circuit breaker on how much of the fleet they're allowed to remove. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Time in each lifecycle state:** nodes in burn-in, quarantine or RMA and their age (**custom** gauge from the lifecycle controller, or kube-state-metrics node labels or taints).
+- **Out-of-service fraction:** GPUs not allocatable ÷ installed per cell, against the `maxUnhealthy`-style breaker.
+- **Repeat-offender rate:** nodes returning to quarantine within 30 days of a repair (**custom**). A high rate means the remediation ladder is resetting faults rather than fixing them.
+- **Burn-in escape rate:** nodes that fail in production within 14 days of passing acceptance (**custom**).
+- **Detection inputs:** `changes(DCGM_FI_DEV_XID_ERRORS[1h])`, `DCGM_FI_DEV_ROW_REMAP_FAILURE`, and `kube_node_spec_taint` for quarantine taints.
+
+```promql
+# Out-of-service GPUs per cell (installed minus allocatable on Ready, uncordoned nodes)
+sum by (cluster) (kube_node_status_capacity{resource="nvidia_com_gpu"})
+- sum by (cluster) (kube_node_status_allocatable{resource="nvidia_com_gpu"}
+    * on (cluster, node) group_left() (kube_node_spec_unschedulable == 0))
+```
+
+**Example SLOs (examples, not recommendations):** at most 2% of GPUs out of service per cell (the breaker halts automation above it); median RMA turnaround ≤ 10 business days; burn-in escapes ≤ 1% of accepted nodes.
+
+**SLA angle:** vendor RMA SLAs (turnaround, advance replacement) are contracts to track and enforce. Measure them from your ledger, not the vendor portal.
+
+**Alerting:** page when the breaker trips (correlated failure or bad firmware wave). Ticket on RMA aging and repeat offenders.
+
+**Failure signals:** a firmware wave raising XID rates in the first cell (halt the wave), soft-reset loops on hardware faults, and RMA'd parts coming back with the same serial and the same fault.
+
 ## Interview soundbites
 
 - "A GPU node is a state machine: racked, burn-in, accepted, suspect, repair, RMA. Only accepted counts as capacity, and each transition has exactly one owner."

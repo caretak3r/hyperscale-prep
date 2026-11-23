@@ -572,6 +572,25 @@ Run on 2026-11-16 against all 66 lessons. "Fixed" means the earlier lesson was e
 
 **Verified unchanged, so you can keep saying them:** all 19 CVE ids cited across the lessons have PUBLISHED records (checked against cveawg.mitre.org); the kubelet three-minor skew (since 1.28; KEP-1498's (12 / 3) - 1 = 3); APF `flowcontrol.apiserver.k8s.io/v1` GA in 1.29; ValidatingAdmissionPolicy GA in 1.30; DRA `resource.k8s.io/v1` GA in 1.34; PyTorch `weights_only=True` default since 2.6.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Post-loop maintenance for SLO knowledge means **keeping metric names, versions and defaults current**. They drift faster than concepts, and a renamed metric breaks every rule and every flashcard that cites it. See the [SRE playbook](/sre-slis-slos-slas).
+
+**What to refresh each quarter (and why it goes stale):**
+- **Exporter renames:** dcgm-exporter 4.9.0 (2026-11-06) renamed the default fields: `DCGM_FI_DEV_XID_ERRORS` → `DCGM_FI_DEV_XID_ERROR`, `DCGM_FI_DEV_GPU_UTIL` → `DCGM_FI_DEV_GPU_UTIL_RATIO`, `DCGM_FI_PROF_PIPE_TENSOR_ACTIVE` → `DCGM_FI_PROF_TENSOR_UTIL_RATIO`. Grep the lessons and rule packs for the old names.
+- **Engine metric changes:** vLLM and SGLang add, deprecate and rename metrics between minor releases. Re-read `docs/design/metrics.md` (vLLM) and the SGLang metrics collector for the version you cite.
+- **Router metrics:** llm-d EPP moved from `inference_objective_*` / `inference_pool_*` to `llm_d_epp_*`, and old `kvcache_index_*` names are no longer emitted.
+- **Kubernetes SLI metrics:** stability levels change (alpha → beta → stable), so check `apiserver_request_sli_duration_seconds`, `kubelet_pod_start_sli_duration_seconds` and `scheduler_pod_scheduling_sli_duration_seconds` against the current metrics reference.
+- **Semantic conventions:** OTel GenAI conventions are at development stability and moved to their own repo, so attribute names can change.
+
+**A fact-audit pattern (example):**
+```bash
+# Find SLO-related metric names in the lessons that a newer exporter renamed
+rg -n 'DCGM_FI_DEV_XID_ERRORS|DCGM_FI_DEV_GPU_UTIL\b|inference_objective_|kvcache_index_' pages/
+```
+
+**Spaced-repetition cards:** add one card per SLO concept (burn windows, SLA vs SLO, token-weighted vs request-weighted latency) and one per volatile name, tagged with the version it was verified against.
+
 ## Interview soundbites
 
 - "I run a quarterly fact audit. Every version, CVE and GPU name in my notes gets checked against the upstream record, and anything I can't verify comes off the card."

@@ -317,6 +317,23 @@ These are failures of the **candidate**, as the interviewer sees them.
 9. **Multi-tenancy on GPUs.** Shared GPUs (MIG or time-slicing) only within one trust boundary; reset GPU memory between tenants; confidential computing where customers require it ([L18](/lessons/18-gpu-node-pools-mig-timeslicing), [L25](/lessons/25-multi-tenant-gpu-isolation-quota)).
 10. **Detection.** Alert on access to weight buckets from new principals, large egress from training networks, new tier-0 admins, and admission policy bypasses.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+In a system-design mock, SLOs belong in **Phase 1 (scope)** and **Phase 5 (operations)**. Interviewers at this level expect you to name SLIs per workload, say where they're measured, and show how SLOs drive rollout gates and capacity. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLO questions to expect, and strong answers:**
+- **"What are the SLOs for this platform?"** Give one per workload class, each with a vantage point. Inference: availability at the router (`llm_d_epp_request_outcome_total`) and TTFT and inter-token latency at the engine (`vllm:time_to_first_token_seconds`, `vllm:inter_token_latency_seconds`). Training: goodput and checkpoint success (**custom**). Fleet: healthy GPU fraction. Agents: task success and first-event latency. Mark the numbers as starting points to validate against baselines.
+- **"How do 120 clusters roll up?"** Burn rate per cell, a global SLO as a traffic-weighted aggregate, and one page per cause, not per cluster.
+- **"How does an SLO change your rollout?"** Ring promotion gated on canary-vs-stable burn, and an error-budget policy that freezes features when the budget is exhausted.
+- **"What's in the SLA?"** Looser than the SLO (for example 99.5% against 99.9%), with credits, exclusions (customer-caused 4xx, announced maintenance), a measurement window and a vantage point.
+- **"Capacity?"** Tie GPU headroom to the TTFT SLO. Queue depth (`vllm:num_requests_waiting`) and KV usage (`vllm:kv_cache_usage_perc`) are the leading indicators. Training borrowing idle GPUs must be preemptible within the inference SLO.
+
+**What to draw:** the SLI path from engine and router metrics, through per-cell Prometheus recording rules, to burn alerts and SLA reports (the playbook's Mermaid diagram).
+
+**Red flags interviewers score down:** "99.99% everything", mean latency instead of percentiles, GPU utilization as an SLO, no definition of a good event, and per-cluster pages for a global cause.
+
+**Example SLOs (examples, not recommendations):** 99.9% inference availability; 99% of tier-1 requests TTFT ≤ 1 s; 99% of training jobs admitted ≤ 15 min; ≥ 97% of GPUs healthy and schedulable.
+
 ## Interview soundbites
 
 - "Three workloads, three shapes: training is fabric-bound, inference is latency-bound, agents are token-bound and hostile."

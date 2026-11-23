@@ -266,6 +266,30 @@ kubectl get peerauthentication,authorizationpolicy -n model-serving -o yaml | rg
 
 **AI/ML punchline:** meshing the inference Service stops casual east-west scrapes of the HTTP API; it does **nothing** for a world-readable weight bucket or an unsigned image. Split the trust domains on purpose.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+A mesh adds latency and failure modes to every hop, and its retries can multiply GPU load. The SRE question is "what does the mesh cost the SLO, and does it hide or create failures?" See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Request success at the mesh:** Istio `istio_requests_total` by `response_code`, or Linkerd `response_total` by `classification`.
+- **Latency added:** `istio_request_duration_milliseconds` (or Linkerd `response_latency_ms`) at the client sidecar compared with the server sidecar. The difference is the mesh plus network.
+- **Control-plane convergence:** `pilot_proxy_convergence_time` and `pilot_xds_pushes`. Slow pushes mean endpoint changes (pods scaling, cells draining) reach Envoys late.
+- **mTLS certificate health:** workload cert expiry and rotation failures. An expired cert is a full outage that no app metric explains.
+
+```promql
+# Server-side non-5xx ratio per destination service (Istio)
+sum by (destination_service) (rate(istio_requests_total{reporter="destination",response_code!~"5.."}[5m]))
+/ sum by (destination_service) (rate(istio_requests_total{reporter="destination"}[5m]))
+```
+
+**Example SLOs (examples, not recommendations):** the mesh adds ≤ 5 ms at p99 per hop; p99 proxy convergence ≤ 10 s; zero workload certificates within 24 h of expiry.
+
+**SLA angle:** customer SLAs ignore the mesh, but its retries change what "a request" means. Count attempts and outcomes separately so retries don't hide failures from the SLI.
+
+**Alerting:** page on destination-side success burn. Ticket on convergence latency. Watch for retry amplification: retrying a 503 on a saturated GPU pool turns brownout into overload.
+
+**Failure signals:** idle or stream timeouts cutting long LLM streams, STRICT mTLS rollouts breaking a plaintext health check, and sidecar start ordering failing the first requests after a cold start.
+
 ## Interview soundbites
 
 - **“Mesh sits on CNI — NetworkPolicy is L3/L4; mTLS is identity. I run both.”**

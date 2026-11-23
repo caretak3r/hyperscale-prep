@@ -391,6 +391,20 @@ Score each dimension 1 to 4. Weights sum to 100.
 
 Pass: ≥ 70/100 and no 1s. **Below 3 on integrity and security judgment fails the round.** Calibration check: if every dimension is a 3, you're a strong senior. Staff needs 4s on ownership, influence and judgment.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Behavioral rounds for staff platform roles **often turn into SLO stories**: an incident you led, a budget policy you introduced, an SLO you changed because it was wrong. Have one STAR story per theme with numbers you can defend, and keep confidential numbers abstract. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLO questions to expect, and how to answer:**
+- **"Tell me about an incident you led."** Lead with impact in SLO terms ("we burned about 40% of the month's availability budget in 3 hours for two tenants"), then detection, mitigation and the postmortem change. Include a structural fix, not just "we added an alert".
+- **"When did you push back on a reliability target?"** For example, a stakeholder asking for 99.99% on a single-region GPU pool. Show the error-budget math, the cost of the extra nine, and the compromise (tiered SLOs, or a multi-cell design for tier-1 only).
+- **"How did you get teams to adopt SLOs?"** Start with one workload, use existing metrics (`vllm:*`, router outcomes), and pick an error-budget policy that leadership agreed to *before* the first freeze.
+- **"A time you were wrong?"** An SLO that measured the wrong vantage point (engine-side while users saw router errors), or a latency SLO on mean instead of percentile, and how you found and fixed it.
+
+**Keep numbers consistent** with your other rounds (L66's claims ledger). If you say "99.9% / TTFT ≤ 1 s" in design, don't say something else here.
+
+**Red flags interviewers score down:** blaming individuals, no measurable outcome, "we never had incidents", and confidential customer names or exact internal figures.
+
 ## Interview soundbites
 
 - "I'll tell you what I did, and I'll be clear where the team did the work."

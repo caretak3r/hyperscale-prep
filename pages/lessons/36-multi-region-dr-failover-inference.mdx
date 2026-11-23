@@ -317,6 +317,30 @@ spec:
         names: ["llm-70b-preheat-*"]   # preheat Job only — not the Serving Deployment
 ```
 
+## SRE focus: SLIs, SLOs & SLAs
+
+DR turns two numbers into SLOs: **RTO** (how fast inference is serving again in the survivor) and **RPO** (how much training progress, config or cache is lost). Both need measuring in drills, not promising from slides. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Failover RTO:** time from the decision to fail over until the survivor meets the TTFT SLO at full load, measured in game days (**custom**, from drill records plus router TTFT).
+- **Survivor readiness:** signed release digest warm in the survivor before shifting (**custom** preheat check), plus spare capacity from the healthy-GPU ratio against the failover reserve.
+- **External probe success per region:** `probe_success` from outside both regions. During failover this is the only trustworthy SLI.
+- **RPO for training:** checkpoint age at the moment of a regional loss (**custom** checkpoint-age gauge, replicated cross-region).
+- **Replication lag:** time since the newest weight and config digest landed in each region (**custom**).
+
+```promql
+# Outside-in availability per region (blackbox probes from a third location)
+avg by (region) (avg_over_time(probe_success{job="inference-probe"}[5m]))
+```
+
+**Example SLOs (examples, not recommendations):** inference RTO ≤ 15 min at p90 across quarterly drills; training RPO ≤ 30 min; survivor preheated for 100% of tier-1 models before any planned shift.
+
+**SLA angle:** contracts state RTO and RPO for regional events, and data-residency customers may forbid cross-region failover entirely. That has to be an SLA exclusion or a dedicated in-region redundancy design.
+
+**Alerting:** page on probe failure from multiple vantage points. During failover, freeze changes in the survivor and suppress cause alerts from the failed region.
+
+**Failure signals:** survivor capacity sized on an average day instead of peak, weights missing in the survivor's mirror, failback flapping traffic, and GSLB health checks that test TLS rather than serving.
+
 ## Interview soundbites
 
 - "RTO for inference is detect + decide + shift + hydrate debt + warm-up. DNS TTL is a floor, not the budget."

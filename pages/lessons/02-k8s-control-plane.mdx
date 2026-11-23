@@ -241,6 +241,31 @@ resources:
 
 **AI/ML fleets:** admission must gate unsigned model/runtime images and deny world-readable Secret mounts for weight pullers. Audit who can create Jobs that mount checkpoint volumes; a malicious training Job with cluster-admin is a weight-exfiltration path.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+The control plane is a dependency of every workload in the cell. Its SLOs come from upstream SIG Scalability, so quote those definitions rather than invented numbers. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Mutating API latency:** `apiserver_request_sli_duration_seconds` with `verb=~"POST|PUT|PATCH|DELETE"`. This metric already excludes webhook time and priority-and-fairness queue wait, so measure those separately.
+- **Read-only (LIST/GET) latency by `scope`** (resource, namespace or cluster) from the same histogram. A cluster-scoped LIST of 200k pods is a different SLI from a GET.
+- **Priority-and-fairness health:** `apiserver_flowcontrol_rejected_requests_total` and `apiserver_flowcontrol_request_wait_duration_seconds` per `priority_level`. Rejections in `workload-high` mean controllers are being starved.
+- **etcd:** `etcd_disk_wal_fsync_duration_seconds`, `etcd_disk_backend_commit_duration_seconds`, `etcd_server_leader_changes_seen_total`, `etcd_server_has_leader`, and `etcd_mvcc_db_total_size_in_bytes` ÷ `etcd_server_quota_backend_bytes`.
+
+```promql
+# p99 mutating latency per resource (upstream SLO: <= 1 s, 99th percentile over 5 min)
+histogram_quantile(0.99, sum by (le, resource, verb) (rate(apiserver_request_sli_duration_seconds_bucket{verb=~"POST|PUT|PATCH|DELETE"}[5m])))
+# etcd space headroom
+max(etcd_mvcc_db_total_size_in_bytes / etcd_server_quota_backend_bytes)
+```
+
+**Upstream SLOs (SIG Scalability):** mutating single-object calls ≤ 1 s at p99. Read-only calls ≤ 1 s at resource scope, ≤ 5 s at namespace scope and ≤ 30 s at cluster scope, all at p99.
+
+**SLA angle:** a managed control plane's SLA covers the API endpoint only. It doesn't cover your webhooks, CRD controllers, or a full etcd that you caused. Check the provider's current figure and exclusions.
+
+**Alerting:** page on API availability or latency burn and on `etcd_server_has_leader == 0`. Ticket on fsync p99 creeping up or DB size above about 80% of quota.
+
+**Failure signals:** APF rejections after a new operator ships an unpaginated LIST, leader churn on noisy disks, and watch-cache misses that send LISTs straight to etcd.
+
 ## Interview soundbites (steal these)
 
 1. **“Apiserver is horizontally scalable; etcd is the consistency bottleneck.”** I size cells so etcd stays boring.

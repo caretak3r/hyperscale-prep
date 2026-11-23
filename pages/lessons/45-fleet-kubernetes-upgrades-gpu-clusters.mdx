@@ -418,6 +418,30 @@ cosign verify registry.k8s.io/kube-apiserver-amd64:v1.34.2 \
 - **Inference deployments** come back on new nodes with images resolved by digest, signed, and admitted by the same policy. Do not let an upgrade wave become the moment someone "temporarily" relaxes admission to get capacity back.
 - **Network policy:** CNI upgrades are where NetworkPolicy enforcement can briefly change. After the CNI wave, run a policy test (pods in tenant namespaces cannot reach the weight cache service of other tenants, cannot reach cloud metadata, cannot reach the kubelet API).
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Fleet upgrades are the largest **planned** spend of error budget. Each ring should have a budget, a bake period gated on workload SLIs, and a stop rule. Training-safe drains turn "node upgraded" into "no goodput lost". See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Deprecated-API callers:** `apiserver_requested_deprecated_apis` (by group, version, resource and `removed_release`). This must be zero for removed APIs before the control-plane step.
+- **Version skew:** `count by (kubelet_version) (kube_node_info)` per cluster against the allowed kubelet/apiserver skew.
+- **Ring health:** API latency SLI (`apiserver_request_sli_duration_seconds`), inference TTFT burn and training goodput in upgraded clusters compared with not-yet-upgraded ones.
+- **Drain safety:** training goodput lost per drained node (restart waste) and PDB-blocked drains (**custom**, from drain controller logs).
+- **Calendar SLI:** clusters on a supported version ÷ all clusters, against end-of-life dates.
+
+```promql
+# Clients still calling APIs removed in the target release (example: 1.38)
+sum by (group, version, resource) (apiserver_requested_deprecated_apis{removed_release="1.38"})
+```
+
+**Example SLOs (examples, not recommendations):** 100% of clusters on a supported minor before EOL; each ring spends ≤ 20% of the monthly budget and bakes ≥ 24 h; zero training checkpoints lost to upgrade drains.
+
+**SLA angle:** use the "announced maintenance" exclusion sparingly. Upgrades that need it every month mean the process isn't safe enough. Customer-facing SLAs should survive an upgrade ring without exclusions.
+
+**Alerting:** auto-halt the ring and page the change owner on worse burn than control clusters. Ticket on EOL calendar burn.
+
+**Failure signals:** removed APIs called by an old operator, conversion-webhook outages after a CRD storage-version change, a GPU Operator incompatible with the new kubelet, and drains evicting gangs one pod at a time.
+
 ## Interview soundbites
 
 - "Upgrades aren't a project, they're a pipeline. Every cluster has a ring, and ring 0 is canaries with synthetic GPU jobs."

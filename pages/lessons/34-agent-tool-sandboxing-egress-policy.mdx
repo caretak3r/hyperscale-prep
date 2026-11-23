@@ -512,6 +512,30 @@ curl -sS -m 5 https://pypi.org/simple/ -o /dev/null -w '%{http_code}\n'
 
 Signed, append-only audit for every gateway decision (prompt digest, toolset digest, args hash, decision, approver, result) and every proxy connection (tenant, session, host, bytes). Detection at three layers — proxy (unexpected hosts, byte spikes), gateway (denied side effects, approval anomalies), node/runtime (Tetragon/Falco, gVisor runtime monitoring) — because each tier blinds a different one.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Sandbox and egress controls must be **fast and correct enough to stay on**. If sandboxes start slowly or the egress proxy drops legitimate calls, teams route around them. Give the security path an SLO. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Sandbox ready time:** `agent_sandbox_claim_startup_latency_ms` and `agent_sandbox_creation_latency_ms` (kubernetes-sigs/agent-sandbox), per `sandbox_template`.
+- **Warm-pool depth:** `agent_sandbox_warmpool_size{sandbox_status="ready"}`. Zero ready sandboxes means the next claim is a cold start.
+- **Egress proxy latency and errors:** Envoy `envoy_cluster_upstream_rq_time` and response-code classes on the egress proxy.
+- **Legitimate-call denials:** allowlisted destinations that got denied (**custom**, from proxy or Cilium deny logs matched against the allowlist). This is the false-positive rate of the security control.
+- **Escape attempts:** denials to metadata endpoints or the cluster API from sandboxes. These are security signals with a **zero** expectation.
+
+```promql
+# p95 sandbox claim latency per template (ms)
+histogram_quantile(0.95, sum by (le, sandbox_template) (rate(agent_sandbox_claim_startup_latency_ms_bucket[5m])))
+```
+
+**Example SLOs (examples, not recommendations):** p95 claim ≤ 2 s for warm templates; warm pool never empty for more than 1 minute; egress proxy adds ≤ 20 ms p99; under 0.1% of allowlisted calls denied.
+
+**SLA angle:** agent products sell "task completes" rather than "sandbox up". Sandbox SLOs are internal, but they sit directly under the task-success SLA.
+
+**Alerting:** page on warm-pool exhaustion during peak or on claim-latency burn. Send escape attempts to security, never to a muted channel.
+
+**Failure signals:** gVisor or Kata overhead blowing the claim budget for heavy images, DNS allowlists breaking on CDN changes, and egress-proxy credential injection failing after a secret rotation.
+
 ## Interview soundbites
 
 - "Model output is untrusted input. The prompt is not a security boundary; the gateway, the sandbox and the egress proxy are."

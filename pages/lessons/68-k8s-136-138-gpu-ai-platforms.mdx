@@ -777,6 +777,30 @@ done
 - Hugging Face or registry tokens never go in env on serving pods: the checkpoint section shows why. Use mounted, short-lived credentials and keep the model fetch in the pipeline, not in the pod.
 - Bucket IAM for weights and checkpoints stays as in [L13](/lessons/13-ml-weights-checkpoint-hardening) / [L64](/lessons/64-mock-security-deep-dive-weights-platform): the serving identity reads one prefix through a VPC endpoint, with two Deny statements, never `*`.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Each Kubernetes minor release adds features that **create new SLIs or move existing ones**. Image volumes for weights shift cold start, MutatingAdmissionPolicy adds an in-process admission path, and DRA device taints start evicting pods. Roll each one across the fleet with a metric that proves it's healthy. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Weights as image volumes:** `kubelet_image_volume_mounted_errors_total` ÷ `kubelet_image_volume_requested_total` (beta). Cold start shifts from a model download to an image pull, so track pull time (`kubelet_image_pull_duration_seconds`, alpha) per model image.
+- **MutatingAdmissionPolicy health:** `apiserver_mutating_admission_policy_check_total` by `policy` and `error_type`, and `apiserver_mutating_admission_policy_check_duration_seconds` (both alpha). There's no webhook network hop, but a bad CEL expression still fails every matching create.
+- **HPA on GPU pools:** `horizontal_pod_autoscaler_controller_metric_computation_total{error!="none"}` and `horizontal_pod_autoscaler_controller_desired_replicas`. A metric-source outage freezes scaling, which shows up later as a TTFT SLO burn.
+- **DRA device taints:** `device_taint_eviction_controller_pod_deletions_total` (alpha). Unexpected spikes mean a DeviceTaintRule matched too broadly, and each deletion costs a training restart or an inference replica.
+
+```promql
+# Image-volume mount failure ratio per node (weights didn't arrive)
+sum by (node) (rate(kubelet_image_volume_mounted_errors_total[15m]))
+/ sum by (node) (rate(kubelet_image_volume_requested_total[15m]))
+```
+
+**Example SLOs (examples, not recommendations):** ≥ 99.9% of image-volume mounts succeed; MutatingAdmissionPolicy errors ≤ 0.01% of matched requests; zero unplanned device-taint evictions on training pools.
+
+**SLA angle:** a feature rollout is a planned change that consumes budget. Gate each ring on these SLIs plus the workload SLOs, and keep a feature-gate rollback path.
+
+**Alerting:** page on admission-policy error bursts (they block deploys fleet-wide). Ticket on image-volume and HPA computation errors. Alert on any device-taint eviction surge.
+
+**Failure signals:** alpha metrics renamed between minors, registry throttling on multi-hundred-GB weight images, CEL cost limits, and HPA tolerance changes reacting differently on bursty inference traffic.
+
 ## Interview soundbites
 
 - "ImageVolume went GA in 1.36. We mount weights as a digest-pinned, signed OCI object, read-only, and our admission policy checks `spec.volumes`, because most image verifiers only look at containers."

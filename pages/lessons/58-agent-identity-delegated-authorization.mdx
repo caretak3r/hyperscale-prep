@@ -326,6 +326,30 @@ Identity is the security layer for agents: almost every control in Lessons 52–
 - Subscribe gateways to Shared Signals (CAEP session revoked, RISC credential compromise) from the IdP so offboarding a user stops their agents.
 - Audit logs keep the full `act` chain, the agent version and model, the approval ID and the token `jti`, retained per policy and queryable by user ("what did agents do for me?") and by agent ("everything v42 touched").
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Agent identity and delegated authorization put **an auth hop before every tool call**. Token exchange latency adds to task latency, and its failure fails closed. The kill switch has its own SLO: how fast every agent loses access. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Token exchange success and latency:** RFC 8693 or OBO exchanges that succeed ÷ attempts, with p99 latency, per IdP and audience (**custom** or IdP-provided). Workload identity issuance (SPIFFE or cloud federation) has its own success ratio.
+- **Step-up approval latency:** risky-action request → approval or denial (**custom**). This is a human-in-the-loop SLO, so keep it out of platform latency.
+- **Kill-switch propagation:** switch flipped → last agent token rejected fleet-wide (**custom**, drilled). It's bounded by token TTL plus cache TTL.
+- **Credential scope violations:** calls denied for scope ÷ calls. Spikes mean a broken policy push or a misbehaving agent.
+
+```promql
+# Example custom SLI: token-exchange failure ratio per audience (metric name is illustrative)
+sum by (audience) (rate(agent_token_exchange_total{result!="success"}[5m]))
+/ sum by (audience) (rate(agent_token_exchange_total[5m]))
+```
+
+**Example SLOs (examples, not recommendations):** 99.99% of token exchanges succeed; exchange adds ≤ 50 ms p99; kill switch effective fleet-wide ≤ 60 s in drills; 100% of agent credentials TTL ≤ 15 min.
+
+**SLA angle:** "we can revoke an agent's access within N seconds" is the identity SLA customers ask about in security reviews. Prove it with drill results, not design docs.
+
+**Alerting:** page on exchange failure burn (it blocks every tool call). Ticket if drill results breach the kill-switch target. Send scope-violation spikes to security.
+
+**Failure signals:** IdP rate limits during agent bursts, JWKS cache misses after key rotation, clock skew on short-TTL tokens, and caches holding revoked tokens past the kill switch.
+
 ## Interview soundbites
 
 - "Agents are workloads. They get platform-attested identity, not API keys in env vars."

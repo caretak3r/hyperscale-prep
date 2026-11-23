@@ -332,6 +332,29 @@ cat /sys/kernel/livepatch/*/transition    # expect 0 within minutes
 kubectl get nodes -L node.example.com/os-image | awk '{print $NF}' | sort | uniq -c
 ```
 
+## SRE focus: SLIs, SLOs & SLAs
+
+OS and kernel management changes the **most correlated failure mode in the fleet**: one bad image, kernel or driver tuple on every node. SLOs are about safe rollout (waves, bake, rollback) and drift, and they gate on workload SLIs, not node health alone. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Version-tuple drift:** nodes not on the target tuple, from `kube_node_info` labels (`kernel_version`, `os_image`, `kubelet_version`, `container_runtime_version`) plus the GPU driver version label on DCGM metrics.
+- **Wave health:** workload SLIs (TTFT burn, training goodput, `changes(DCGM_FI_DEV_XID_ERRORS[1h])`) compared between upgraded and not-yet-upgraded nodes in the same wave.
+- **Reboot cost:** GPU-hours lost to drains and reboots per wave (**custom**, from drain timestamps × GPUs).
+- **Live-patch coverage:** nodes with the required live patch applied ÷ nodes affected (**custom**).
+
+```promql
+# Kernel drift: node count per kernel version per cluster (target: one value per pool)
+count by (cluster, kernel_version) (kube_node_info)
+```
+
+**Example SLOs (examples, not recommendations):** ≥ 98% of nodes on the target tuple within 30 days of release; each wave bakes 24 h with no worse burn than control nodes; zero mixed driver/fabric-manager versions within an NVSwitch domain.
+
+**SLA angle:** none externally, but a bad kernel on all nodes is the classic SLA-breaking event. Waves and bake times are how you keep that blast radius inside one cell's budget.
+
+**Alerting:** auto-halt a wave on worse burn than control and page the change owner. Ticket on drift past the window.
+
+**Failure signals:** DKMS module build failures after a kernel bump, an open/proprietary driver mismatch on new GPUs, fabric manager version skew, and live patches that are applied but not loaded.
+
 ## Interview soundbites
 
 - "On a GPU node there's no such thing as a kernel-only change. Kernel, driver, fabric manager and OFED ship as one image ID."

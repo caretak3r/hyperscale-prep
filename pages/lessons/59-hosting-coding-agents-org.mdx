@@ -488,6 +488,30 @@ Coding agents combine the two things security reviews dislike most: untrusted in
 - Trailers set by managed policy; commits created via the GitHub API as the App (verified), or signed with a per-runner key you control; push attribution and `Committer must match pusher` where available; rulesets with required signatures, human code-owner review and `require_last_push_approval`. Agents never approve, merge, or add `Signed-off-by`.
 - One audit join: session ID, run ID, gateway spend, PR number, merge SHA, deploy ID. Retain harness OTel with prompts off by default and content stripping at the collector ([L56](/lessons/56-agent-observability-evaluation)).
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Hosting coding agents for an org is a **multi-tenant service with costs**. The SLIs combine developer-facing latency, model-gateway capacity (429s and budgets), sandbox readiness and the quality of agent-authored changes. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Model gateway availability and throttling:** 5xx and 429s ÷ requests per team, separating *budget* 429s (expected, per policy) from *capacity* 429s (an SLO violation). When the gateway is llm-d-backed, use `llm_d_epp_request_outcome_total{outcome="rejected"}` by `reason`.
+- **Session start:** agent session requested → sandbox and repo checkout ready (**custom**, plus `agent_sandbox_claim_startup_latency_ms` if you use agent-sandbox).
+- **Credential scope:** sessions holding only the per-repo, short-lived token ÷ all sessions (**custom**). This must be 100%.
+- **Change quality:** agent-authored PRs that pass CI ÷ opened, and reverts of merged agent PRs within 7 days (**custom**, from the VCS API). It's a quality SLI, not a reliability one.
+
+```promql
+# Capacity (not budget) rejections at the inference router, by model
+sum by (target_model_name) (rate(llm_d_epp_request_outcome_total{outcome="rejected", reason=~"rejected-saturated|rejected-flow-limit"}[5m]))
+/ sum by (target_model_name) (rate(llm_d_epp_request_outcome_total[5m]))
+```
+
+**Example SLOs (examples, not recommendations):** gateway availability 99.9% during business hours; capacity 429s ≤ 0.5%; session ready ≤ 30 s p95; 100% of sessions on scoped short-lived credentials.
+
+**SLA angle:** internal SLAs commit to availability and per-team budgets. Agents writing code means audit trails for every change are a compliance commitment, so measure the audit log pipeline's completeness too.
+
+**Alerting:** page on gateway availability and capacity-429 burn. Ticket per team on budget exhaustion forecasts. Send scope violations to security.
+
+**Failure signals:** one team's agent loop burning the shared model budget, rate limits by provider, sandboxes stuck on large monorepo checkouts, and secrets leaking into agent transcripts.
+
 ## Interview soundbites
 
 - "A coding agent is a program that reads untrusted text and then runs a shell with your credentials. We manage it like that, not like an editor plugin."

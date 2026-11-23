@@ -385,6 +385,22 @@ On D-4, recite this chain from memory in the same order. It's the [L13](/lessons
 - Don't record a real interview without consent from everyone on the call. Many companies forbid it, and some US states require all-party consent. The mocks were recorded. The real loop isn't.
 - Keep the refresh backlog private. Publish only generic topics to the site, such as "CNI change across a fleet during training," never "Company X asked..."
 
+## SRE focus: SLIs, SLOs & SLAs
+
+In interview week, SLO material is **high-yield and easy to fumble**. Rehearse a short SLO answer you can give in any round, and the five follow-ups that come with it. See the [SRE playbook](/sre-slis-slos-slas).
+
+**A 60-second SLO answer to rehearse (examples, labeled as such):**
+"For tier-1 inference I'd start with availability at the router, around 99.9% non-5xx over 30 days. Latency would be the share of requests with TTFT ≤ 1 s, around 99%, read from `vllm:time_to_first_token_seconds` with `le="1.0"`, plus inter-token latency (`vllm:inter_token_latency_seconds`, token-weighted). Alerts are multi-window burn rate: 14.4× on 1h and 5m pages, 1× on 3d and 6h tickets. The SLA is looser, say 99.5%, with credits and exclusions. Those numbers are starting points I'd validate against real baselines."
+
+**Follow-ups to expect, and the one-line answer:**
+- **"Why not GPU utilization?"** It's a cost and capacity signal. Users feel TTFT and errors.
+- **"Low-traffic models?"** Minimum-request guard, synthetic probes, and longer windows.
+- **"Per tenant?"** The router has the tenant label (`fairness_id` in llm-d); engine metrics don't.
+- **"Training SLOs?"** Goodput (productive time ÷ wall time) and checkpoint success and age. These are custom metrics: say so.
+- **"How do SLOs change behaviour?"** An error-budget policy agreed in advance freezes risky changes when the budget is spent.
+
+**Day-before check:** re-verify any metric names you plan to say aloud (for example, the dcgm-exporter 4.9.0 renames) and keep them in the claims ledger with one value each.
+
 ## Interview soundbites
 
 - "I keep a claims ledger. Every number I say in a round goes on it, and I re-read it at every break, so the debrief sees one version of me."

@@ -578,6 +578,29 @@ spec:
     ports: [{protocol: TCP, port: 443}]
 ```
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Release gating is where **error budgets meet model releases**. The gate decides whether a new weight version may spend budget, and the canary measures how much it spends. The gate pipeline also needs SLOs of its own, or it becomes the bottleneck. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Canary vs baseline burn:** the canary InferencePool's TTFT, ITL and error ratios compared with stable over the same window (router `llm_d_epp_*` by `target_model_name`, or engine `vllm:*` by `model_name`).
+- **Gate turnaround:** checkpoint registered to gate verdict, p95 (**custom**, from the gate pipeline). Eval capacity is part of this SLI: `kueue_admission_wait_time_seconds{cluster_queue="eval"}`.
+- **Gate escape rate:** regressions found in production that the gate passed ÷ releases (**custom**, from postmortems). This measures the gate's quality.
+- **Rollout analysis health:** Argo Rollouts `analysis_run_metric_phase` and `rollout_phase`. Inconclusive analyses that auto-promote are a hidden risk.
+
+```promql
+# Canary TTFT SLI vs stable (router-side; both must use identical prompt mix for a fair comparison)
+sum(rate(llm_d_epp_request_ttft_seconds_bucket{target_model_name="m-canary",le="1"}[15m])) / sum(rate(llm_d_epp_request_ttft_seconds_count{target_model_name="m-canary"}[15m]))
+```
+
+**Example SLOs (examples, not recommendations):** 95% of candidate checkpoints get a verdict within 6 h; zero releases promoted with an unresolved gate; canary burn must stay at or below 1.2× stable over 2 h before each step.
+
+**SLA angle:** an error-budget policy belongs in the release process: **if the model's budget is exhausted, non-fix releases pause**. Customer SLAs sometimes also promise deprecation notice before a model version changes, which is a release SLO too.
+
+**Alerting:** auto-abort the rollout on canary burn, and page only if abort fails. Ticket on gate-turnaround burn.
+
+**Failure signals:** canaries too small to be significant, the eval prompt mix diverging from production, judges unpinned between runs, and performance gates skipped "because accuracy passed".
+
 ## Interview soundbites
 
 - **"New weights are a deploy. The eval suite is its test suite, and the gate result is a signed attestation that admission enforces, so skipping evals means the pods don't start."**

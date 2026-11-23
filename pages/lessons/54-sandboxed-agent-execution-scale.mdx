@@ -298,6 +298,30 @@ This is the section that matters most for this topic: everything that makes sand
 - Every claim has a `shutdownTime` and TTL; per-tenant `ResourceQuota` on `count/sandboxclaims.extensions.agents.x-k8s.io`, CPU and memory so one runaway agent loop can't drain the pool for everyone.
 - Audit claim, adopt, suspend, resume and delete per tenant; ship router access logs; alert on cross-tenant router hits, claims from unexpected service accounts, and snapshot reads by any identity other than the snapshot service.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Sandboxes are an **SLO-critical dependency for agent tasks**. Claim-to-ready latency becomes "time to first action", and warm-pool depletion is the leading indicator. The SLIs and alerts section above uses the real agent-sandbox metric names. This section adds the SLO framing. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Claim-to-ready latency:** `agent_sandbox_claim_startup_latency_ms` (agent-sandbox v1.0.12, milliseconds, `launch_type` warm or cold), and `agent_sandbox_creation_latency_ms` for cold creation.
+- **Warm-pool headroom:** `agent_sandbox_warmpool_size{sandbox_status="ready"}` ÷ the pool's target. The ratio goes to zero before latency jumps.
+- **Resume success and latency:** `agent_sandbox_resume_latency_ms`, plus `agent_sandbox_resume_total{result="error"}` per template.
+- **Escape-resistance SLI:** sandboxes on the intended runtime class (gVisor, Kata) ÷ all sandboxes (kube-state-metrics `kube_pod_runtimeclass_name_info`). This must be 100%.
+
+```promql
+# Share of warm claims ready within 1s (v1.0.12 buckets include 1000 ms)
+sum by (sandbox_template) (rate(agent_sandbox_claim_startup_latency_ms_bucket{launch_type="warm", le="1000"}[5m]))
+/ sum by (sandbox_template) (rate(agent_sandbox_claim_startup_latency_ms_count{launch_type="warm"}[5m]))
+```
+
+**Example SLOs (examples, not recommendations):** 99% of interactive claims ready ≤ 1 s (warm); 99% of cold claims ≤ 30 s; resume success ≥ 99.9%; 100% of untrusted sandboxes on the hardened runtime.
+
+**SLA angle:** sandbox startup and isolation sit behind "agent task latency" and "your code runs isolated" claims. Isolation is a security commitment with no budget.
+
+**Alerting:** page on warm-pool exhaustion for interactive templates, and on claim-latency burn. Ticket on cold-path regressions and snapshot staleness.
+
+**Failure signals:** image pulls on cold starts, snapshots going stale after base-image patches, controller rate limits at high claim rates, and node pressure from idle warm pools.
+
 ## Interview soundbites
 
 - "A sandbox platform is a latency product on an isolation product. If it's slow, people bypass it, and the bypass is the breach."

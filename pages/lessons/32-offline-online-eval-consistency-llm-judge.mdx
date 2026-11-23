@@ -424,6 +424,31 @@ spec:
     ports: [{protocol: TCP, port: 443}]
 ```
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Offline and online evals are **correctness SLIs**. A model that answers fast and wrong is still an outage. The SRE angle is measuring quality drift continuously and keeping the judge, which is itself a model service, inside its own SLO. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Online quality score:** rolling judge score on sampled production traffic per model version (**custom**, for example `online_eval_score` with `model_digest` and `rubric_version` labels and bounded cardinality).
+- **Offline/online agreement:** difference between the offline suite score and the online sampled score for the same release (**custom**). A widening gap means the offline set no longer represents traffic.
+- **Judge service SLOs:** the judge is a vLLM deployment, so it gets `vllm:time_to_first_token_seconds` and availability SLOs, plus a queue-time SLO for async scoring.
+- **Sampling coverage:** scored requests ÷ sampled requests per hour (**custom**). Gaps in scoring look like "no regressions".
+
+```promql
+# Judge backlog: async scoring falling behind (judge queue on the engine)
+max by (model_name) (vllm:num_requests_waiting{model_name="judge-v3"})
+```
+
+`judge-v3` is an example served-model name.
+
+**Example SLOs (examples, not recommendations):** online score within 1 point of the release baseline for 99% of hours; 95% of sampled requests scored within 1 h; judge availability 99.5%.
+
+**SLA angle:** quality is rarely in an SLA, but enterprise contracts can promise that a pinned model version doesn't change behaviour. Pinned digests and drift SLIs are the evidence.
+
+**Alerting:** ticket on quality drift; page only on a sharp drop that coincides with a release, and auto-roll back. Never page on a single judge score.
+
+**Failure signals:** an unpinned judge model changing scores across runs, sampling bias toward short prompts, PII in sampled logs that blocks the pipeline, and judge outages that silently reduce coverage.
+
 ## Interview soundbites
 
 - **"Offline and online are two instruments. I keep them on the same contract — same serving artifact, same judge digest and rubric version — and I calibrate offline Δ to online Δ with historical regressions and holdout cells."**

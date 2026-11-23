@@ -437,6 +437,31 @@ spec:
 
 **Punchline:** Temporal durability without mTLS/encrypted payloads is a **durable secret leak**. Argo convenience without SA/image/bucket discipline is a **GPU-powered exfil path**. L15 decides who may change the substrate; L16 decides who may **run code that touches weights and cells**.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Workflow engines run fleet operations (upgrades, drains, promotions) and ML pipelines. SLIs are **workflow success, end-to-end latency and worker saturation**. A backed-up task queue is the leading indicator. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Temporal workflow outcomes:** `temporal_workflow_completed` and `temporal_workflow_failed` (SDK metrics) per workflow type.
+- **Temporal latency:** `temporal_workflow_endtoend_latency` and, most important, `temporal_activity_schedule_to_start_latency` and `temporal_workflow_task_schedule_to_start_latency`. Rising schedule-to-start means there aren't enough workers.
+- **Argo Workflows:** `argo_workflows_total_count` by phase, `argo_workflows_error_count`, `argo_workflows_queue_depth_gauge` and `argo_workflows_pod_pending_count`.
+- **Business SLI:** fleet-upgrade waves completed without a human ÷ waves started (**custom**, or from workflow results).
+
+```promql
+# p99 activity schedule-to-start (worker saturation), per task queue
+histogram_quantile(0.99, sum by (le, task_queue) (rate(temporal_activity_schedule_to_start_latency_seconds_bucket[5m])))
+```
+
+Exported names depend on the SDK's Prometheus naming. Check whether yours adds `_seconds`.
+
+**Example SLOs (examples, not recommendations):** 99% of checkpoint-promote workflows finish in ≤ 30 min; p99 activity schedule-to-start ≤ 5 s; 98% of upgrade waves need no manual intervention.
+
+**SLA angle:** none externally, but workflow SLOs sit underneath customer-facing promises such as "new model version live within 4 hours of approval".
+
+**Alerting:** page on schedule-to-start burn for workflows that are part of incident response (drain, failover). Ticket on failure-rate trends.
+
+**Failure signals:** history-size limits on long-running workflows, non-determinism errors after a worker deploy, and Argo controller queue growth when thousands of pods finish at once.
+
 ## Interview soundbites
 
 - **“Temporal for durable multi-day fleet sagas with signals; Argo for K8s-native GPU/batch DAGs — compose, don’t collapse.”**

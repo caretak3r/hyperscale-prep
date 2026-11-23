@@ -586,6 +586,31 @@ spec:
 
 **Punchline:** Prefill/decode disaggregation and MoE EP are **capacity and topology** features. **Separate read-only SAs, signed digests on every role, CMEK GetObject-only WI, NetPol locking KV and expert fabrics, and admission on pool labels** are what stop a PD scale-out from becoming a fleet-wide weight breach.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+Disaggregation splits one SLO across two pools. **Prefill owns TTFT, decode owns ITL, and the KV handoff sits between them.** Each pool needs its own SLI and scaling signal, plus an SLI for the transfer. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Prefill → TTFT:** `vllm:request_prefill_time_seconds` and `vllm:time_to_first_token_seconds` on prefill workers, or SGLang `sglang:time_to_first_token_seconds` with `sglang:num_prefill_inflight_queue_reqs`.
+- **Decode → ITL:** `vllm:inter_token_latency_seconds` and `vllm:request_decode_time_seconds` on decode workers.
+- **KV transfer:** vLLM NIXL `vllm:nixl_xfer_time_seconds`, `vllm:nixl_num_failed_transfers_total` and `vllm:nixl_num_kv_expired_reqs_total`; SGLang `sglang:kv_transfer_latency_ms` and `sglang:num_transfer_failed_reqs_total`.
+- **MoE balance:** SGLang `sglang:eplb_balancedness`. Hot experts show up as ITL skew across decode ranks.
+
+```promql
+# p99 KV transfer time (vLLM NIXL connector)
+histogram_quantile(0.99, sum by (le) (rate(vllm:nixl_xfer_time_seconds_bucket[5m])))
+# Failed KV transfers per second (each one is a recompute or a failed request)
+sum(rate(vllm:nixl_num_failed_transfers_total[5m]))
+```
+
+**Example SLOs (examples, not recommendations):** TTFT ≤ 1 s for 99% of requests; ITL ≤ 50 ms for 99% of gaps; KV transfer p99 ≤ 10% of the TTFT budget; under 0.01% of transfers failing.
+
+**SLA angle:** the customer still sees one request. The SLA is unchanged by disaggregation, but the internal error budget has to be split between prefill, transfer and decode so each team knows what it can spend.
+
+**Alerting:** page on end-to-end TTFT or ITL burn, then route to the pool that owns the burning component. Ticket on expert imbalance.
+
+**Failure signals:** decode batches empty because prefill is under-provisioned, transfer p99 eating the TTFT budget after a rail change, and a silent fallback from NVLink to RDMA ([L71](/lessons/71-rack-scale-inference-nvl72-disagg-wide-ep)).
+
 ## Interview soundbites
 
 - **“Co-located prefill and decode share one HBM wallet — TTFT and TPOT will fight.”**

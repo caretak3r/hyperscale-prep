@@ -341,6 +341,31 @@ Alerting is a security control. Detection of weight exfiltration, unsigned image
 - **Keep payloads clean.** No prompts, completions, tokens, user IDs or unreleased model names in alert labels or annotations sent to third-party pagers. Templates link to internal dashboards instead of embedding data. Alert text leaves your trust boundary.
 - **Signed, pinned images.** Run Prometheus, Alertmanager, Sloth/Pyrra and the remediation controller from signed images pinned by digest. The remediation controller can cordon and drain the fleet, so give it a narrow ServiceAccount, rate limits (no more than X% of a pool per hour) and its own alert when it hits the limit.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+This lesson is the alerting half of the SRE playbook. The **[SRE playbook](/sre-slis-slos-slas)** adds the pieces this lesson assumes: the SLI catalog per workload type with verified metric names, the SLI/SLO/SLA distinction (credits, exclusions, measurement windows), Sloth and Pyrra specs, and per-tenant and token-weighted measurement.
+
+**What an SRE should double-check in any burn-rate setup:**
+- **The SLI's vantage point:** engine (`vllm:time_to_first_token_seconds`), router (`llm_d_epp_request_ttft_seconds`) or outside-in probe. Burn on the one the SLA is measured at, and use the others for diagnosis.
+- **Bucket boundaries:** latency SLIs need an exact `le` that exists. vLLM TTFT has 1.0 and 2.5, and ITL has 0.05 and 0.1.
+- **Weighting:** the ITL histogram is token-weighted and per-request TPOT isn't. Choose on purpose per model tier.
+- **Low-traffic guard:** a minimum request rate before paging, or a probe SLI for low-volume models.
+- **Missing data:** `absent()` and `up == 0` companions for every SLO, plus a dead-man's switch outside the cell.
+- **Metric renames:** dcgm-exporter 4.9.0 renamed the default fields, so `DCGM_FI_DEV_XID_ERRORS` became `DCGM_FI_DEV_XID_ERROR`. Version-pin your rule packs alongside the exporter.
+
+```promql
+# Classic fast-burn page for a 99.9% availability SLO (both windows must exceed 14.4x)
+(job:slo_errors:ratio_rate1h > (14.4 * 0.001)) and (job:slo_errors:ratio_rate5m > (14.4 * 0.001))
+```
+
+The `job:slo_errors:*` names are recording rules that Sloth or Pyrra generate for you. They aren't upstream metrics.
+
+**Example SLOs (examples, not recommendations):** see the example tables in the playbook. 99.9% availability and 99% TTFT ≤ 1 s for tier-1 chat models are common starting points to validate against real baselines.
+
+**SLA angle:** the SLA sits below the SLO (for example 99.5% against 99.9%). Burn alerts protect the SLO so the SLA is never reached. Compute SLA reports per customer from router data with exclusions applied.
+
+**Failure signals:** alert fatigue from cause-based alerts, 150 cells paging separately for one global cause, and silences that outlive the incident.
+
 ## Interview soundbites
 
 - "I page on burn rate, not thresholds. 14.4x over an hour and 6x over six hours page; slower burns open tickets."
@@ -383,6 +408,7 @@ Alerting is a security control. Detection of weight exfiltration, unsigned image
 
 ## References
 
+- Companion: [SRE playbook: SLIs, SLOs & SLAs for AI workloads on Kubernetes](/sre-slis-slos-slas): SLI catalog with metric names, SLO/SLA examples, Sloth & Pyrra specs, burn-rate alerts
 - Google SRE: [Alerting on SLOs (SRE Workbook ch. 5)](https://sre.google/workbook/alerting-on-slos/) · [Implementing SLOs](https://sre.google/workbook/implementing-slos/) · [Error budget policy example](https://sre.google/workbook/error-budget-policy/) · [Monitoring distributed systems](https://sre.google/sre-book/monitoring-distributed-systems/)
 - Tooling: [Sloth](https://github.com/slok/sloth) · [Pyrra](https://github.com/pyrra-dev/pyrra) · [OpenSLO spec](https://github.com/OpenSLO/OpenSLO)
 - Prometheus: [Alerting rules](https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/) · [Unit testing rules](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/) · [Histograms and summaries](https://prometheus.io/docs/practices/histograms/) · [Alerting practices](https://prometheus.io/docs/practices/alerting/)

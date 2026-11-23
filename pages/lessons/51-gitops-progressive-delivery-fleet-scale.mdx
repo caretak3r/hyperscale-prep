@@ -429,6 +429,29 @@ count by (version) (kube_deployment_labels{deployment="dcgm-exporter", label_app
 - **Drift is a security signal.** An unexpected diff on a `Role`, a `NetworkPolicy`, a webhook config or the serving Deployment's volume mounts is a SOC alert, not just a self-heal event. Ship Argo CD and Flux events plus Kubernetes audit logs for writes not made by the GitOps identity to the SIEM. Alert when an Application stays with automated sync disabled for more than its break-glass window.
 - **Network isolation.** Argo's API and UI sit behind SSO and private ingress, never public. The controller-to-cluster path uses private endpoints. Notifications controller secrets (Slack, PagerDuty tokens) are scoped and rotated.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+GitOps and progressive delivery are where **SLOs gate change**. Promotion between rings should be decided by burn-rate comparisons, and the GitOps control plane needs its own SLOs because it's the path for both changes and rollbacks. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Sync and health state:** Argo CD `argocd_app_info{sync_status,health_status}`, `argocd_app_sync_total{phase}` and `argocd_cluster_connection_status`; Flux `gotk_reconcile_duration_seconds` and `gotk_resource_info`.
+- **Promotion analysis:** Argo Rollouts `analysis_run_metric_phase` and `rollout_phase`, where the analysis queries the service's SLIs (router or engine) for canary vs stable.
+- **Change lead time per ring:** merge to all clusters in a ring synced and healthy (**custom**, from Git and Argo events).
+- **Rollback time:** decision to every cluster reverted and healthy (**custom**, drilled). This SLO matters most during an incident.
+
+```promql
+# Clusters the Argo CD control plane can't reach (changes and rollbacks blocked there)
+sum by (server) (argocd_cluster_connection_status == 0)
+```
+
+**Example SLOs (examples, not recommendations):** 99% of ring-1 syncs healthy within 15 min of merge; fleet-wide rollback within 30 min; zero promotions when analysis is inconclusive.
+
+**SLA angle:** an error-budget policy wired into GitOps is the enforcement point: **exhausted budget, so only fix-forward or rollback commits are promoted**. That's how SLA risk is controlled in practice.
+
+**Alerting:** page if the GitOps control plane loses connectivity to many clusters, because rollback is impossible. Auto-abort rollouts on burn and page only if abort fails.
+
+**Failure signals:** ApplicationSet changes fanning out to every cluster at once, sync waves ordering CRDs after the CRs that use them, drift self-heal fighting an emergency manual fix, and repo-server outages that block every sync.
+
 ## Interview soundbites
 
 - "Argo CD shards by destination cluster, not by app. So fix churn first with exclusions, webhooks and generate-paths, and only then add shards. A giant training cluster gets a shard of its own."

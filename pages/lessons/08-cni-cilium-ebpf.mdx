@@ -273,6 +273,31 @@ kubectl -n kube-system exec ds/cilium -- hubble observe --since 15m \
 
 **AI/ML fleets:** after Lesson 7’s edge authn, assume a compromised tenant pod will probe `/v1/completions` on neighbor ClusterIPs. Identity-aware default-deny + Hubble on the model namespace is how you keep weights and GPU capacity from becoming an in-cluster free API.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+The CNI is in the data path of every request and every NCCL bootstrap. Its SLIs are **unexpected drops, datapath capacity and node-to-node health**, not agent pod restarts. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **Unexpected drops:** `cilium_drop_count_total` by `reason`. Exclude intended policy denials; count conntrack-full, map-insertion and "no route" drops as bad.
+- **eBPF map pressure:** `cilium_bpf_map_pressure` per map. Near 1.0 on the CT or NAT map means new connections are about to fail.
+- **Node-to-node connectivity:** `cilium_node_health_connectivity_status` and `cilium_node_health_connectivity_latency_seconds`.
+- **Flow-level drops (Hubble):** `hubble_drop_total`, when the Hubble drop metric is enabled.
+
+```promql
+# Non-policy drops per node (example: treat as bad events against a pod-network SLO)
+sum by (node, reason) (rate(cilium_drop_count_total{reason!~"(?i).*policy.*"}[5m]))
+# Highest map pressure in the cell
+max by (map_name) (cilium_bpf_map_pressure)
+```
+
+**Example SLOs (examples, not recommendations):** 99.99% of probe connections between nodes succeed per 5 minutes; map pressure stays under 0.9 for 99.9% of the time.
+
+**SLA angle:** none externally. Internally, the CNI is part of the platform SLO that serving teams rely on.
+
+**Alerting:** page on node-health connectivity loss across many nodes, a sign of a datapath regression after an agent upgrade. Ticket on map pressure trending up.
+
+**Failure signals:** CT map exhaustion during an agent-sandbox burst, endpoint regeneration storms after a policy push, and kube-proxy-replacement edge cases with `externalTrafficPolicy`.
+
 ## Interview soundbites
 
 - **“CNI is ADD/DEL/CHECK plus IPAM — brands are implementations.”** Start from the contract and the failure modes.

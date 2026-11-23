@@ -381,6 +381,20 @@ This whole lesson is the security section, so here it is as the **control stack 
 
 Pass: ≥ 70/100 and no 1s. Scoring below 3 on the untrusted-artifact gate fails the round.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+In a security deep-dive, reliability and security meet in **security SLOs**: measurable commitments for detection, revocation and integrity, and for the telemetry that proves them. Expect at least one question about how you'd *measure* a control. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLO questions to expect, and strong answers:**
+- **"How do you know only signed weights are served?"** Measure it as an SLI: replicas whose weight digest matches a signed manifest ÷ all replicas (**custom**, from admission or loader logs), with a 100% target and every miss a security incident. Back it with admission denials (`apiserver_validating_admission_policy_check_total{enforcement_action="deny"}`, or Kyverno and Gatekeeper metrics).
+- **"How fast can you revoke access to the weights bucket?"** A revocation SLO measured in drills: decision to the last successful read (cloud audit logs), bounded by credential TTL.
+- **"Can attackers hide in your SLO data?"** Telemetry integrity: authenticated scrapes (llm-d EPP `--metrics-endpoint-auth` uses TokenReview/SAR), no tenant-controlled labels, and a tamper-evident SLA report store. Audit pipeline completeness via `apiserver_audit_error_total`.
+- **"Does a DoS count against the SLA?"** Usually, unless excluded. Rate limiting and admission control (`vllm:admission_rejections`, router rejections) protect the SLO, and attack traffic must be identifiable to exclude it honestly.
+
+**Example security SLOs (examples, not recommendations):** 100% of serving replicas on signed digests; credential revocation effective ≤ 15 min in drills; 100% of audit events delivered; critical CVEs on serving images patched ≤ 7 days.
+
+**Red flags interviewers score down:** treating security as "no budget, so no measurement", metrics endpoints open to tenants, and SLA reports that anyone with cluster-admin can edit.
+
 ## Interview soundbites
 
 - "Fifty trusted people at 98% each is about a one-in-three chance nobody leaks. The fix is fewer readers, not better people: workloads read weights, humans get break-glass."

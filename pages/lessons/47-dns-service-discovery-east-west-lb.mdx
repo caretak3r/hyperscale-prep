@@ -396,6 +396,33 @@ DNS and service discovery decide **where every byte goes**. Whoever controls the
 
 **Availability is security too.** CoreDNS and NodeLocal DNSCache need `system-cluster-critical` and `system-node-critical` priority, PodDisruptionBudgets, and anti-affinity, so a noisy tenant or a bad rollout can't take out name resolution for the whole cell.
 
+## SRE focus: SLIs, SLOs & SLAs
+
+DNS and east-west load balancing are **dependencies of every request**. A 1% SERVFAIL rate becomes a 1% inference error rate somewhere else. Give CoreDNS and NodeLocal DNSCache their own SLOs, and watch conntrack as the hidden capacity limit. See the [SRE playbook](/sre-slis-slos-slas).
+
+**SLIs an SRE owns here:**
+- **DNS success:** `coredns_dns_responses_total` by `rcode`, where SERVFAIL counts as bad and NXDOMAIN is usually valid. Watch the node-local cache and upstream CoreDNS separately.
+- **DNS latency:** `coredns_dns_request_duration_seconds`.
+- **Upstream health:** `coredns_forward_healthcheck_broken_total` and `coredns_forward_max_concurrent_rejects_total`.
+- **Cache effectiveness:** `coredns_cache_hits_total` ÷ `coredns_cache_requests_total`.
+- **Conntrack headroom:** `node_nf_conntrack_entries` ÷ `node_nf_conntrack_entries_limit` on GPU and gateway nodes.
+
+```promql
+# DNS availability SLI per cluster (SERVFAIL/REFUSED as bad)
+1 - sum by (cluster) (rate(coredns_dns_responses_total{rcode=~"SERVFAIL|REFUSED"}[5m]))
+  / sum by (cluster) (rate(coredns_dns_responses_total[5m]))
+# Conntrack pressure
+max by (instance) (node_nf_conntrack_entries / node_nf_conntrack_entries_limit)
+```
+
+**Example SLOs (examples, not recommendations):** 99.99% of DNS queries answered without SERVFAIL; p99 ≤ 10 ms from NodeLocal DNSCache; conntrack ≤ 75% of the limit on every node 99.9% of the time.
+
+**SLA angle:** customers never see DNS, but it's a shared dependency that defeats cell isolation if it's global. Keep resolution in the cell so one DNS outage burns one cell's budget.
+
+**Alerting:** page on DNS availability burn. Ticket on cache-hit drops and conntrack trends.
+
+**Failure signals:** `ndots:5` multiplying queries, EndpointSlice fan-out to 10k nodes after a large Service changes, conntrack exhaustion on gateway nodes during long-lived streaming, and upstream forwarder rejects during a scale-out.
+
 ## Interview soundbites
 
 - "`ndots:5` turns one external lookup into about ten queries. I lower it per workload and use trailing dots for external names."
